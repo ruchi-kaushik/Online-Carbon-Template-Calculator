@@ -2,7 +2,7 @@
 	"name": "carbon-calculator",
 	"private": true,
 	"version": "0.0.0",
-	"homepage": "https://ruchi-kaushik.github.io/Online-Carbon-Template-Calculator/",
+	"homepage": "https://ruchi-kaushik.github.io/Online-Carbon-Template-Calculator",
 	"type": "module",
 	"scripts": {
 		"dev": "vite",
