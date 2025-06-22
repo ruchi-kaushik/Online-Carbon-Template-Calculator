@@ -4,8 +4,8 @@ import React, { useState, useMemo, useRef } from 'react';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { PlusCircle, Trash2, Edit, Save, XCircle, FileDown, AreaChart, ArrowRight, Table } from 'lucide-react';
 
-// --- Helper Data & Functions ---
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#AF19FF', '#FF4560'];
+
 const initialScopeData = {
     dataCategory: '',
     subCategory: '',
@@ -20,12 +20,12 @@ const initialScopeData = {
     notes: '',
 };
 
-// --- Main App Component ---
-export default function App() {
-    // --- State Management ---
-    const [step, setStep] = useState(1); // 1: Data Entry, 2: Dashboard
+const editableKeys = Object.keys(initialScopeData).filter(
+    key => !['id', 'emissionFactorSource', 'dataSource', 'collectionFrequency', 'dataQualityNotes', 'notes'].includes(key)
+);
 
-    // General Information
+export default function App() {
+    const [step, setStep] = useState(1);
     const [generalInfo, setGeneralInfo] = useState({
         reportingYear: new Date().getFullYear(),
         startDate: '',
@@ -38,44 +38,51 @@ export default function App() {
         lastUpdateDate: new Date().toISOString().slice(0, 10),
     });
 
-    // Emissions Data
     const [scope1Data, setScope1Data] = useState([]);
     const [scope2Data, setScope2Data] = useState([]);
     const [scope3Data, setScope3Data] = useState([]);
-    
-    // Editing State
+
     const [editingId, setEditingId] = useState(null);
     const [editingData, setEditingData] = useState({});
 
-    // --- Refs for PDF Export ---
     const dashboardRef = useRef(null);
     const tablesRef = useRef(null);
 
-    // --- Event Handlers ---
     const handleGeneralInfoChange = (e) => {
         const { name, value } = e.target;
         setGeneralInfo(prev => ({ ...prev, [name]: value }));
     };
 
     const addRow = (scopeSetter) => {
-        scopeSetter(prev => [...prev, { ...initialScopeData, id: Date.now() }]);
+        const newRow = {
+            ...initialScopeData,
+            id: Date.now().toString() + Math.random().toString(36).substr(2, 5) // Always a string id
+        };
+        scopeSetter(prev => [...prev, newRow]);
     };
-    
-    const handleScopeChange = (id, e, scopeData, scopeSetter) => {
-        const { name, value } = e.target;
-        const updatedData = scopeData.map(item =>
-            item.id === id ? { ...item, [name]: value } : item
-        );
-        scopeSetter(updatedData);
+
+
+    // FIXED: Uses functional state updates to avoid stale closures.
+    const handleScopeChange = (setter) => {
+        return (id) => (e) => {
+            const { name, value } = e.target;
+            setter(prev =>
+            prev.map(item => item.id === id ? { ...item, [name]: value } : item)
+            );
+        };
     };
+
 
     const removeRow = (id, scopeSetter) => {
         scopeSetter(prev => prev.filter(item => item.id !== id));
+        console.log('Row removed:', id);
     };
 
     const startEditing = (item, scope, scopeSetter) => {
         setEditingId(item.id);
-        setEditingData({ ...item, scope, scopeSetter });
+        // Storing the original scope array and setter is not ideal, but for this modal structure it's a direct way.
+        // A more advanced state management (like Redux/Zustand) would handle this differently.
+        setEditingData({ ...item, originalScope: scope, scopeSetter });
     };
 
     const cancelEditing = () => {
@@ -84,21 +91,18 @@ export default function App() {
     };
 
     const saveEditing = () => {
-        const { id, scope, scopeSetter, ...dataToSave } = editingData;
-        const updatedData = scope.map(item =>
-            item.id === id ? dataToSave : item
-        );
-        scopeSetter(updatedData);
+        const { id, originalScope, scopeSetter, ...dataToSave } = editingData;
+        scopeSetter(prev => prev.map(item => item.id === id ? { ...item, ...dataToSave } : item));
         setEditingId(null);
         setEditingData({});
+        console.log('Row saved:', id);
     };
 
     const handleEditDataChange = (e) => {
         const { name, value } = e.target;
         setEditingData(prev => ({ ...prev, [name]: value }));
     };
-    
-    // --- Calculations (Memoized for performance) ---
+
     const calculateEmissions = (item) => (parseFloat(item.quantity) || 0) * (parseFloat(item.emissionFactor) || 0);
 
     const totalEmissions = useMemo(() => {
@@ -118,16 +122,12 @@ export default function App() {
         allData.forEach(item => {
             const source = item.subCategory || 'Uncategorized';
             const emissions = calculateEmissions(item);
-            if (sourceMap[source]) {
-                sourceMap[source] += emissions;
-            } else {
-                sourceMap[source] = emissions;
-            }
+            sourceMap[source] = (sourceMap[source] || 0) + emissions;
         });
         return Object.entries(sourceMap)
             .map(([name, value]) => ({ name, emissions: value }))
             .sort((a, b) => b.emissions - a.emissions)
-            .slice(0, 10); // Top 10 sources
+            .slice(0, 10);
     }, [scope1Data, scope2Data, scope3Data]);
 
     const scopeChartData = [
@@ -136,17 +136,14 @@ export default function App() {
         { name: 'Scope 3', value: totalEmissions.scope3 },
     ].filter(d => d.value > 0);
 
-    // --- PDF Export Logic ---
-    const exportToPdf = async () => {    
+    const exportToPdf = async () => {
         if (!html2canvas || !jsPDF) {
             console.error("PDF generation libraries not found on window object.");
             alert("Error: Could not generate PDF. Please try again later.");
             return;
         }
-
         const dashboardCanvas = await html2canvas(dashboardRef.current, { scale: 2 });
         const tablesCanvas = await html2canvas(tablesRef.current, { scale: 2 });
-        
         const dashboardImgData = dashboardCanvas.toDataURL('image/png');
         const tablesImgData = tablesCanvas.toDataURL('image/png');
 
@@ -154,37 +151,34 @@ export default function App() {
         const pdfWidth = pdf.internal.pageSize.getWidth();
         const pdfHeight = pdf.internal.pageSize.getHeight();
 
-        // Page 1: Dashboard
         pdf.setFontSize(20);
         pdf.text(`${generalInfo.organisationName} - Carbon Footprint Report`, 14, 22);
         pdf.setFontSize(12);
         pdf.text(`Reporting Year: ${generalInfo.reportingYear}`, 14, 30);
-        
+
         const dashboardImgProps = pdf.getImageProperties(dashboardImgData);
         const dashboardImgHeight = (dashboardImgProps.height * pdfWidth) / dashboardImgProps.width;
         pdf.addImage(dashboardImgData, 'PNG', 0, 40, pdfWidth, dashboardImgHeight);
 
-        // Page 2: Data Tables
         pdf.addPage();
         pdf.setFontSize(20);
         pdf.text('Detailed Emissions Data', 14, 22);
-        
+
         const tablesImgProps = pdf.getImageProperties(tablesImgData);
         const tablesImgHeight = (tablesImgProps.height * pdfWidth) / tablesImgProps.width;
-        
-        // Check if tables image fits on one page, otherwise split (simple split for now)
+
+        // Simple logic for potentially oversized table images
         if (tablesImgHeight > (pdfHeight - 30)) {
              pdf.addImage(tablesImgData, 'PNG', 0, 30, pdfWidth, pdfHeight - 30);
-             pdf.addPage();
-             pdf.addImage(tablesImgData, 'PNG', 0, - (pdfHeight-30) * 1, pdfWidth, tablesImgHeight)
         } else {
-            pdf.addImage(tablesImgData, 'PNG', 0, 30, pdfWidth, tablesImgHeight);
+             pdf.addImage(tablesImgData, 'PNG', 0, 30, pdfWidth, tablesImgHeight);
         }
 
         pdf.save(`${generalInfo.organisationName}_Carbon_Report_${generalInfo.reportingYear}.pdf`);
     };
 
     // --- UI Components ---
+
     const GeneralInfoForm = () => (
         <div className="bg-white p-6 md:p-8 rounded-2xl shadow-lg border border-gray-100">
             <h2 className="text-2xl font-bold text-gray-800 mb-6">Organisation Information</h2>
@@ -206,7 +200,7 @@ export default function App() {
             </div>
         </div>
     );
-    
+
     const ScopeTable = ({ title, data, setData, scopeColor }) => (
         <div className="bg-white p-6 md:p-8 rounded-2xl shadow-lg mt-8 border border-gray-100">
             <div className="flex justify-between items-center mb-6">
@@ -221,7 +215,7 @@ export default function App() {
                 <table className="w-full min-w-[1200px] text-sm text-left text-gray-600">
                     <thead className="text-xs text-gray-700 uppercase bg-gray-100 rounded-t-lg">
                         <tr>
-                            {['Data Category', 'Sub Category', 'Fuel/Source Type', 'Unit', 'Quantity', 'Emission Factor', 'Emissions (Kg/CO2)', 'Actions'].map(h => 
+                            {['Data Category', 'Sub Category', 'Fuel/Source Type', 'Unit', 'Quantity', 'Emission Factor', 'Emissions (Kg/CO2)', 'Actions'].map(h =>
                                 <th key={h} scope="col" className="px-4 py-3">{h}</th>
                             )}
                         </tr>
@@ -229,18 +223,28 @@ export default function App() {
                     <tbody>
                         {data.map(item => (
                             <tr key={item.id} className="bg-white border-b hover:bg-gray-50">
-                                {Object.keys(initialScopeData).filter(k => !['id', 'emissionFactorSource', 'dataSource', 'collectionFrequency', 'dataQualityNotes', 'notes'].includes(k)).map(key => (
+                                {editableKeys.map(key => (
                                     <td key={key} className="px-4 py-3">
                                         {key === 'unit' ? (
-                                            <select name={key} value={item[key]} onChange={(e) => handleScopeChange(item.id, e, data, setData)} className="w-full p-2 bg-transparent border-gray-200 rounded-md">
+                                            <select
+                                                name={key}
+                                                // FIXED: Ensure value is not undefined
+                                                value={item[key] ?? ''}
+                                                // FIXED: Use the new curried handler
+                                                onChange={handleScopeChange(setData)(item.id)}
+                                                className="w-full p-2 bg-transparent border-gray-200 rounded-md">
                                                 <option>litres</option><option>kg</option><option>kWh</option><option>tonnes</option><option>m³</option>
                                             </select>
                                         ) : (
                                             <input
+                                                // FIXED: Added min and step for number inputs
                                                 type={['quantity', 'emissionFactor'].includes(key) ? 'number' : 'text'}
+                                                {...(['quantity', 'emissionFactor'].includes(key) && { min: "0", step: "any" })}
                                                 name={key}
-                                                value={item[key]}
-                                                onChange={(e) => handleScopeChange(item.id, e, data, setData)}
+                                                // FIXED: Ensure value is not undefined
+                                                value={item[key] ?? ''}
+                                                // FIXED: Use the new curried handler
+                                                onChange={handleScopeChange(setData)(item.id)}
                                                 className="w-full p-2 bg-transparent border-b-2 border-gray-200 focus:border-blue-500 outline-none transition-colors"
                                                 placeholder={key.charAt(0).toUpperCase() + key.slice(1).replace(/([A-Z])/g, ' $1')}
                                             />
@@ -249,8 +253,8 @@ export default function App() {
                                 ))}
                                 <td className="px-4 py-3 font-semibold text-gray-800">{calculateEmissions(item).toFixed(2)}</td>
                                 <td className="px-4 py-3 flex items-center gap-2">
-                                     <button onClick={() => startEditing(item, data, setData)} className="text-blue-600 hover:text-blue-800 p-1"><Edit size={18} /></button>
-                                     <button onClick={() => removeRow(item.id, setData)} className="text-red-600 hover:text-red-800 p-1"><Trash2 size={18} /></button>
+                                    <button onClick={() => startEditing(item, data, setData)} className="text-blue-600 hover:text-blue-800 p-1"><Edit size={18} /></button>
+                                    <button onClick={() => removeRow(item.id, setData)} className="text-red-600 hover:text-red-800 p-1"><Trash2 size={18} /></button>
                                 </td>
                             </tr>
                         ))}
@@ -259,7 +263,7 @@ export default function App() {
             </div>
         </div>
     );
-    
+
     const EditingModal = () => (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center p-4 z-50">
             <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
@@ -269,9 +273,12 @@ export default function App() {
                         <div key={key}>
                             <label className="block text-sm font-medium text-gray-600 mb-1 capitalize">{key.replace(/([A-Z])/g, ' $1')}</label>
                             <input
+                                // FIXED: Added min and step for number inputs
                                 type={['quantity', 'emissionFactor'].includes(key) ? 'number' : 'text'}
+                                {...(['quantity', 'emissionFactor'].includes(key) && { min: "0", step: "any" })}
                                 name={key}
-                                value={editingData[key] || ''}
+                                // FIXED: Ensure value is not undefined
+                                value={editingData[key] ?? ''}
                                 onChange={handleEditDataChange}
                                 className="w-full px-4 py-2 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                             />
@@ -296,10 +303,9 @@ export default function App() {
             <ScopeTable title="Scope 1 Emissions" data={scope1Data} setData={setScope1Data} scopeColor="#0088FE" />
             <ScopeTable title="Scope 2 Emissions" data={scope2Data} setData={setScope2Data} scopeColor="#00C49F" />
             <ScopeTable title="Scope 3 Emissions" data={scope3Data} setData={setScope3Data} scopeColor="#FFBB28" />
-
             <div className="mt-10 flex justify-center">
-                <button 
-                    onClick={() => setStep(2)} 
+                <button
+                    onClick={() => setStep(2)}
                     disabled={totalOverallEmissions === 0}
                     className="flex items-center gap-3 text-lg font-semibold px-8 py-4 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-full shadow-xl hover:shadow-2xl disabled:bg-gray-400 disabled:shadow-none disabled:cursor-not-allowed transform hover:scale-105 transition-all duration-300">
                     Generate Dashboard <AreaChart size={24}/>
@@ -311,11 +317,11 @@ export default function App() {
     const DashboardView = () => (
         <div>
             <div className="flex justify-between items-center mb-8">
-                 <button onClick={() => setStep(1)} className="flex items-center gap-2 px-6 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors">
+                <button onClick={() => setStep(1)} className="flex items-center gap-2 px-6 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors">
                     <ArrowRight className="transform rotate-180" size={20} /> Back to Data Entry
                 </button>
                 <h1 className="text-4xl font-extrabold text-gray-800 text-center">Emissions Dashboard</h1>
-                 <button onClick={exportToPdf} className="flex items-center gap-2 px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-transform transform hover:scale-105 shadow-md">
+                <button onClick={exportToPdf} className="flex items-center gap-2 px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-transform transform hover:scale-105 shadow-md">
                     <FileDown size={20} /> Export PDF
                 </button>
             </div>
@@ -328,20 +334,20 @@ export default function App() {
                         <p className="text-5xl font-bold text-gray-800">{totalOverallEmissions.toFixed(2)}</p>
                         <p className="text-gray-500 mt-1">Kg/CO2e</p>
                     </div>
-                     <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
+                    <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
                         <h3 className="text-lg font-semibold text-gray-500 mb-2">Scope 1</h3>
                         <p className="text-4xl font-bold text-blue-500">{totalEmissions.scope1.toFixed(2)}</p>
                         <p className="text-gray-500 mt-1">Kg/CO2e</p>
                     </div>
-                     <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
+                    <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
                         <h3 className="text-lg font-semibold text-gray-500 mb-2">Scope 2</h3>
                         <p className="text-4xl font-bold text-green-500">{totalEmissions.scope2.toFixed(2)}</p>
-                         <p className="text-gray-500 mt-1">Kg/CO2e</p>
+                        <p className="text-gray-500 mt-1">Kg/CO2e</p>
                     </div>
-                     <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
+                    <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
                         <h3 className="text-lg font-semibold text-gray-500 mb-2">Scope 3</h3>
                         <p className="text-4xl font-bold text-amber-500">{totalEmissions.scope3.toFixed(2)}</p>
-                         <p className="text-gray-500 mt-1">Kg/CO2e</p>
+                        <p className="text-gray-500 mt-1">Kg/CO2e</p>
                     </div>
 
                     {/* Pie Chart */}
@@ -377,12 +383,11 @@ export default function App() {
             </div>
 
             <div ref={tablesRef} className="mt-8 bg-white p-4">
-                <h2 className="text-2xl font-bold text-gray-800 my-4">Detailed Data</h2>
-                <DataTable title="Scope 1" data={scope1Data} />
-                <DataTable title="Scope 2" data={scope2Data} />
-                <DataTable title="Scope 3" data={scope3Data} />
+                 <h2 className="text-2xl font-bold text-gray-800 my-4">Detailed Data</h2>
+                 <DataTable title="Scope 1" data={scope1Data} />
+                 <DataTable title="Scope 2" data={scope2Data} />
+                 <DataTable title="Scope 3" data={scope3Data} />
             </div>
-
         </div>
     );
 
@@ -391,12 +396,13 @@ export default function App() {
             <h3 className="text-xl font-semibold text-gray-700 mb-2">{title}</h3>
             <div className="overflow-x-auto">
                 <table className="w-full text-sm text-left">
-                     <thead className="text-xs text-gray-700 uppercase bg-gray-50">
+                    <thead className="text-xs text-gray-700 uppercase bg-gray-50">
                         <tr>
-                            {['Data Category', 'Sub Category', 'Fuel/Source', 'Quantity', 'Unit', 'Emission Factor', 'Emissions'].map(h => <th key={h} className="px-4 py-2">{h}</th>)}
+                            {['Data Category', 'Sub Category', 'Fuel/Source', 'Quantity', 'Unit', 'Emission Factor', 'Emissions'].map(h =>
+                                <th key={h} className="px-4 py-2">{h}</th>)}
                         </tr>
-                     </thead>
-                     <tbody>
+                    </thead>
+                    <tbody>
                         {data.map(item => (
                             <tr key={item.id} className="border-b">
                                 <td className="px-4 py-2">{item.dataCategory}</td>
@@ -408,12 +414,11 @@ export default function App() {
                                 <td className="px-4 py-2 font-bold">{calculateEmissions(item).toFixed(2)}</td>
                             </tr>
                         ))}
-                     </tbody>
+                    </tbody>
                 </table>
             </div>
         </div>
     );
-    
 
     // --- Main Render ---
     return (
@@ -423,17 +428,19 @@ export default function App() {
                     <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-green-500">
                         Carbon Footprint Calculator
                     </h1>
-                     <div className="flex items-center space-x-4">
+                    <div className="flex items-center space-x-4">
                         <div className={`flex items-center space-x-2 ${step === 1 ? 'text-blue-600 font-bold' : 'text-gray-500'}`}>
-                           <Table size={24} />
-                           <span>Data Entry</span>
+                            <Table size={24} />
+                            <span>Data Entry</span>
                         </div>
-                        <div className="text-gray-300"> <ArrowRight/> </div>
-                         <div className={`flex items-center space-x-2 ${step === 2 ? 'text-blue-600 font-bold' : 'text-gray-500'}`}>
-                           <AreaChart size={24}/>
-                           <span>Dashboard</span>
+                        <div className="text-gray-300">
+                            <ArrowRight/>
                         </div>
-                     </div>
+                        <div className={`flex items-center space-x-2 ${step === 2 ? 'text-blue-600 font-bold' : 'text-gray-500'}`}>
+                            <AreaChart size={24}/>
+                            <span>Dashboard</span>
+                        </div>
+                    </div>
                 </div>
             </header>
             <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
