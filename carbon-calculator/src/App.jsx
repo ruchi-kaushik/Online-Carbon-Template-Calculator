@@ -399,7 +399,84 @@ export default function App() {
     ].filter(d => d.value > 0);
 
     const exportToPdf = async () => {
-        // PDF logic...
+        const dashboardElement = dashboardRef.current;
+        const tablesElement = tablesRef.current;
+
+        if (!dashboardElement || !tablesElement) {
+            console.error("PDF export failed: dashboard or tables ref not found.");
+            alert("Could not export to PDF, an element was not found.");
+            return;
+        }
+
+        // Use a loading indicator if you have one
+        // setLoading(true);
+
+        try {
+            // Step 1: Generate canvases for both sections
+            const dashboardCanvas = await html2canvas(dashboardElement, {
+                scale: 2,
+                useCORS: true,
+                backgroundColor: '#ffffff'
+            });
+
+            const tablesCanvas = await html2canvas(tablesElement, {
+                scale: 2,
+                useCORS: true,
+                backgroundColor: '#ffffff'
+            });
+
+            const dashboardImgData = dashboardCanvas.toDataURL('image/png');
+            const tablesImgData = tablesCanvas.toDataURL('image/png');
+
+            // Step 2: Set up the PDF document
+            const pdf = new jsPDF('p', 'mm', 'a4');
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const pdfHeight = pdf.internal.pageSize.getHeight();
+            let position = 0; // Tracks the vertical position on the PDF
+
+            // Step 3: Add the header
+            pdf.setFontSize(20);
+            pdf.text(`${generalInfo.organisationName} - Carbon Footprint Report`, 14, 22);
+            pdf.setFontSize(12);
+            pdf.text(`Reporting Year: ${generalInfo.reportingYear}`, 14, 30);
+            position = 40; // Set starting position after the header
+
+            // Step 4: Add the dashboard image
+            const dashboardImgProps = pdf.getImageProperties(dashboardImgData);
+            const dashboardImgHeight = (dashboardImgProps.height * pdfWidth) / dashboardImgProps.width;
+            pdf.addImage(dashboardImgData, 'PNG', 0, position, pdfWidth, dashboardImgHeight);
+            position += dashboardImgHeight;
+
+            // Step 5: Add the "Detailed Data" heading and paginate the tables image
+            pdf.addPage();
+            pdf.setFontSize(20);
+            pdf.text('Detailed Emissions Data', 14, 22);
+            position = 30; // Reset position for the new page
+
+            const tablesImgProps = pdf.getImageProperties(tablesImgData);
+            const tablesImgHeight = (tablesImgProps.height * pdfWidth) / tablesImgProps.width;
+            let heightLeft = tablesImgHeight;
+
+            while (heightLeft > 0) {
+                pdf.addImage(tablesImgData, 'PNG', 0, position, pdfWidth, tablesImgHeight);
+                heightLeft -= (pdfHeight - position); // Subtract the height of the drawn portion
+
+                if (heightLeft > 0) {
+                    pdf.addPage();
+                    position = -heightLeft; // On the new page, start drawing from a negative Y to show the next part
+                }
+            }
+            
+            // Step 6: Save the PDF
+            pdf.save(`${generalInfo.organisationName}_Carbon_Report_${generalInfo.reportingYear}.pdf`);
+
+        } catch (error) {
+            console.error("An error occurred during PDF generation:", error);
+            alert("Sorry, there was an error creating the PDF. Please check the console for details.");
+        } finally {
+            // Turn off loading indicator
+            // setLoading(false);
+        }
     };
 
     // --- RENDER LOGIC ---
