@@ -3,19 +3,20 @@ import cors from 'cors';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import demoData from '../db.json' assert { type: 'json' };
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
 const DB_FILE = path.join('/tmp', 'db.json');
+const DEMO_DB_FILE = path.join(__dirname, '..', 'db.json');
 
 app.use(cors());
 app.use(express.json());
 
 // Initialize the database in the /tmp directory with the demo data
 if (!fs.existsSync(DB_FILE)) {
+    const demoData = JSON.parse(fs.readFileSync(DEMO_DB_FILE, 'utf-8'));
     fs.writeFileSync(DB_FILE, JSON.stringify(demoData));
 }
 
