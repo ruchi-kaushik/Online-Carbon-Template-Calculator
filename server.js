@@ -19,29 +19,47 @@ if (!fs.existsSync(DB_FILE)) {
     fs.writeFileSync(DB_FILE, JSON.stringify({}));
 }
 
+const readDb = () => {
+    try {
+        const data = fs.readFileSync(DB_FILE);
+        return JSON.parse(data);
+    } catch (error) {
+        console.error('Error reading db.json:', error);
+        return {};
+    }
+};
+
+const writeDb = (data) => {
+    try {
+        fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2));
+    } catch (error) {
+        console.error('Error writing to db.json:', error);
+    }
+};
+
 app.post('/api/save', (req, res) => {
-    const data = req.body;
-    fs.writeFile(DB_FILE, JSON.stringify(data, null, 2), (err) => {
-        if (err) {
-            console.error(err);
-            return res.status(500).send('Error saving data');
-        }
-        res.status(200).send('Data saved successfully');
-    });
+    const { tag, data } = req.body;
+    if (!tag || !data) {
+        return res.status(400).send('Missing tag or data');
+    }
+
+    const db = readDb();
+    db[tag] = data;
+    writeDb(db);
+
+    res.status(200).send('Data saved successfully');
 });
 
-app.get('/api/load', (req, res) => {
-    fs.readFile(DB_FILE, (err, data) => {
-        if (err) {
-            console.error(err);
-            return res.status(500).send('Error loading data');
-        }
-        res.status(200).json(JSON.parse(data));
-    });
-});
+app.get('/api/load/:tag', (req, res) => {
+    const { tag } = req.params;
+    if (!tag) {
+        return res.status(400).send('Missing tag');
+    }
 
-app.get('/api/health', (req, res) => {
-    res.status(200).send('Server is healthy');
+    const db = readDb();
+    const tagData = db[tag] || {};
+    
+    res.status(200).json(tagData);
 });
 
 app.listen(PORT, () => {

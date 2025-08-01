@@ -28,5 +28,56 @@
   ],
   "scope2Data": [],
   "scope3Data": [],
-  "step": 1
+  "step": 1,
+  "1754049972130hy4ot8vwc": {
+    "generalInfo": {
+      "reportingYear": 2025,
+      "startDate": "",
+      "endDate": "",
+      "organisationName": "",
+      "reportingBoundary": "s",
+      "contactPerson": "",
+      "contactEmail": "",
+      "dataCollectionMethod": "",
+      "lastUpdateDate": "2025-08-01"
+    },
+    "scope1Data": [],
+    "scope2Data": [],
+    "scope3Data": [],
+    "step": 1
+  },
+  "1754049972528omahcy85n": {
+    "generalInfo": {
+      "reportingYear": 2025,
+      "startDate": "",
+      "endDate": "",
+      "organisationName": "",
+      "reportingBoundary": "",
+      "contactPerson": "",
+      "contactEmail": "",
+      "dataCollectionMethod": "asdsadsad",
+      "lastUpdateDate": "2025-08-01"
+    },
+    "scope1Data": [],
+    "scope2Data": [],
+    "scope3Data": [],
+    "step": 1
+  },
+  "HAIL": {
+    "generalInfo": {
+      "reportingYear": 2025,
+      "startDate": "",
+      "endDate": "",
+      "organisationName": "HAIL",
+      "reportingBoundary": "",
+      "contactPerson": "Ruchi Kaushik",
+      "contactEmail": "",
+      "dataCollectionMethod": "",
+      "lastUpdateDate": "2025-08-01"
+    },
+    "scope1Data": [],
+    "scope2Data": [],
+    "scope3Data": [],
+    "step": 1
+  }
 }

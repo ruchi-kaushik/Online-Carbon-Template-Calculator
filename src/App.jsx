@@ -317,15 +317,16 @@ export default function App() {
 
     const [editingId, setEditingId] = useState(null);
     const [editingData, setEditingData] = useState({});
+    const [tag, setTag] = useState('');
 
     const dashboardRef = useRef(null);
     const tablesRef = useRef(null);
 
-    useEffect(() => {
-        loadState(true); // true to suppress the alert on initial load
-    }, []);
-
     const saveState = async () => {
+        if (!tag) {
+            alert('Please enter a tag to save your progress.');
+            return;
+        }
         const appState = {
             generalInfo,
             scope1Data,
@@ -339,10 +340,10 @@ export default function App() {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(appState),
+                body: JSON.stringify({ tag, data: appState }),
             });
             if (response.ok) {
-                alert('Progress saved!');
+                alert(`Progress saved with tag: ${tag}`);
             } else {
                 alert('Failed to save progress.');
             }
@@ -352,31 +353,31 @@ export default function App() {
         }
     };
 
-    const loadState = async (isInitialLoad = false) => {
+    const loadState = async () => {
+        if (!tag) {
+            alert('Please enter a tag to load your progress.');
+            return;
+        }
         try {
-            const response = await fetch('http://localhost:3001/api/load');
+            const response = await fetch(`http://localhost:3001/api/load/${tag}`);
             if (response.ok) {
                 const appState = await response.json();
                 if (Object.keys(appState).length > 0) {
-                    setGeneralInfo(appState.generalInfo);
-                    setScope1Data(appState.scope1Data);
-                    setScope2Data(appState.scope2Data);
-                    setScope3Data(app_state.scope3Data);
+                    setGeneralInfo(appState.generalInfo || generalInfo);
+                    setScope1Data(appState.scope1Data || []);
+                    setScope2Data(appState.scope2Data || []);
+                    setScope3Data(appState.scope3Data || []);
                     setStep(appState.step || 1);
-                    if (!isInitialLoad) {
-                        alert('Progress loaded!');
-                    }
-                } else if (!isInitialLoad) {
-                    alert('No saved data found.');
+                    alert(`Progress loaded for tag: ${tag}`);
+                } else {
+                    alert(`No saved data found for tag: ${tag}`);
                 }
-            } else if (!isInitialLoad) {
+            } else {
                 alert('Failed to load progress.');
             }
         } catch (error) {
             console.error('Error loading state:', error);
-            if (!isInitialLoad) {
-                alert('Error loading progress.');
-            }
+            alert('Error loading progress.');
         }
     };
 
@@ -547,13 +548,22 @@ export default function App() {
                     <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-green-500">
                         Carbon Footprint Calculator
                     </h1>
-                    <div className="flex items-center space-x-4">
+                    <div className="flex items-center space-x-2">
+                        <input
+                            type="text"
+                            value={tag}
+                            onChange={(e) => setTag(e.target.value)}
+                            placeholder="Enter a tag..."
+                            className="px-4 py-2 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                        />
                         <button onClick={saveState} className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-transform transform hover:scale-105 shadow-md">
                             Save
                         </button>
                         <button onClick={loadState} className="flex items-center gap-2 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors">
                             Load
                         </button>
+                    </div>
+                    <div className="flex items-center space-x-4">
                         <div className={`flex items-center space-x-2 ${step === 1 ? 'text-blue-600 font-bold' : 'text-gray-500'}`}>
                             <Table size={24} /> <span>Data Entry</span>
                         </div>
