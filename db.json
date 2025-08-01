@@ -1,64 +1,32 @@
 {
-  "generalInfo": {
-    "reportingYear": 2025,
-    "startDate": "",
-    "endDate": "",
-    "organisationName": "",
-    "reportingBoundary": "",
-    "contactPerson": "",
-    "contactEmail": "",
-    "dataCollectionMethod": "",
-    "lastUpdateDate": "2025-08-01"
-  },
-  "scope1Data": [
-    {
-      "dataCategory": "a",
-      "subCategory": "s",
-      "fuelSourceType": "2",
-      "unit": "litres",
-      "quantity": "03",
-      "emissionFactor": "011298",
-      "emissionFactorSource": "",
-      "dataSource": "",
-      "collectionFrequency": "Annually",
-      "dataQualityNotes": "",
-      "notes": "",
-      "id": "1754049647162nz8tl"
-    }
-  ],
-  "scope2Data": [],
-  "scope3Data": [],
-  "step": 1,
-  "1754049972130hy4ot8vwc": {
+  "HAIL": {
     "generalInfo": {
       "reportingYear": 2025,
       "startDate": "",
       "endDate": "",
-      "organisationName": "",
-      "reportingBoundary": "s",
-      "contactPerson": "",
+      "organisationName": "HAIL",
+      "reportingBoundary": "",
+      "contactPerson": "Ruchi Kaushik",
       "contactEmail": "",
       "dataCollectionMethod": "",
       "lastUpdateDate": "2025-08-01"
     },
-    "scope1Data": [],
-    "scope2Data": [],
-    "scope3Data": [],
-    "step": 1
-  },
-  "1754049972528omahcy85n": {
-    "generalInfo": {
-      "reportingYear": 2025,
-      "startDate": "",
-      "endDate": "",
-      "organisationName": "",
-      "reportingBoundary": "",
-      "contactPerson": "",
-      "contactEmail": "",
-      "dataCollectionMethod": "asdsadsad",
-      "lastUpdateDate": "2025-08-01"
-    },
-    "scope1Data": [],
+    "scope1Data": [
+      {
+        "dataCategory": "Carbon",
+        "subCategory": "1231",
+        "fuelSourceType": "Petrol",
+        "unit": "litres",
+        "quantity": "29",
+        "emissionFactor": 0,
+        "emissionFactorSource": "",
+        "dataSource": "",
+        "collectionFrequency": "Annually",
+        "dataQualityNotes": "",
+        "notes": "",
+        "id": "17540558862772kunq"
+      }
+    ],
     "scope2Data": [],
     "scope3Data": [],
     "step": 1
