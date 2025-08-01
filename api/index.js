@@ -78,6 +78,10 @@ app.delete('/api/delete/:tag', (req, res) => {
         return res.status(400).send('Missing tag');
     }
 
+    if (tag === 'DEMO') {
+        return res.status(403).send('Cannot delete DEMO data');
+    }
+
     const db = readDb();
     if (db[tag]) {
         delete db[tag];
