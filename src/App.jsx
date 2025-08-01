@@ -604,11 +604,11 @@ export default function App() {
                 />
             )}
             <header className="bg-white shadow-md">
-                <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-                    <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-green-500">
+                <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+                    <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-green-500 text-center md:text-left">
                         Carbon Footprint Calculator
                     </h1>
-                    <div className="flex items-center space-x-2">
+                    <div className="flex flex-wrap items-center justify-center gap-2">
                         <input
                             type="text"
                             value={tag}
