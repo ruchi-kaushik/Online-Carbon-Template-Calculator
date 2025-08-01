@@ -333,7 +333,7 @@ export default function App() {
 
     const fetchTags = async () => {
         try {
-            const response = await fetch('http://localhost:3001/api/tags');
+            const response = await fetch('/api/tags');
             if (response.ok) {
                 const tags = await response.json();
                 setRecentTags(tags);
@@ -360,7 +360,7 @@ export default function App() {
             step,
         };
         try {
-            const response = await fetch('http://localhost:3001/api/save', {
+            const response = await fetch('/api/save', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -385,7 +385,7 @@ export default function App() {
             return;
         }
         try {
-            const response = await fetch(`http://localhost:3001/api/load/${tag}`);
+            const response = await fetch(`/api/load/${tag}`);
             if (response.ok) {
                 const appState = await response.json();
                 if (Object.keys(appState).length > 0) {
@@ -417,7 +417,7 @@ export default function App() {
 
     const handleClearConfirm = async () => {
         try {
-            const response = await fetch(`http://localhost:3001/api/delete/${tag}`, {
+            const response = await fetch(`/api/delete/${tag}`, {
                 method: 'DELETE',
             });
             if (response.ok) {
