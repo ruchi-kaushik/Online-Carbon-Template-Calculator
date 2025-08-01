@@ -1,6 +1,6 @@
 import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { PlusCircle, Trash2, Edit, Save, XCircle, FileDown, AreaChart, ArrowRight, Table } from 'lucide-react';
 
@@ -321,6 +321,41 @@ export default function App() {
     const dashboardRef = useRef(null);
     const tablesRef = useRef(null);
 
+    useEffect(() => {
+        loadState(true); // true to suppress the alert on initial load
+    }, []);
+
+    const saveState = () => {
+        const appState = {
+            generalInfo,
+            scope1Data,
+            scope2Data,
+            scope3Data,
+            step,
+        };
+        localStorage.setItem('carbonCalculatorState', JSON.stringify(appState));
+        alert('Progress saved!');
+    };
+
+    const loadState = (isInitialLoad = false) => {
+        const savedState = localStorage.getItem('carbonCalculatorState');
+        if (savedState) {
+            const appState = JSON.parse(savedState);
+            setGeneralInfo(appState.generalInfo);
+            setScope1Data(appState.scope1Data);
+            setScope2Data(appState.scope2Data);
+            setScope3Data(appState.scope3Data);
+            setStep(appState.step || 1);
+            if (!isInitialLoad) {
+                alert('Progress loaded!');
+            }
+        } else {
+            if (!isInitialLoad) {
+                alert('No saved data found.');
+            }
+        }
+    };
+
     const handleGeneralInfoChange = (e) => {
         const { name, value } = e.target;
         setGeneralInfo(prev => ({ ...prev, [name]: value }));
@@ -489,6 +524,12 @@ export default function App() {
                         Carbon Footprint Calculator
                     </h1>
                     <div className="flex items-center space-x-4">
+                        <button onClick={saveState} className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-transform transform hover:scale-105 shadow-md">
+                            Save
+                        </button>
+                        <button onClick={loadState} className="flex items-center gap-2 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors">
+                            Load
+                        </button>
                         <div className={`flex items-center space-x-2 ${step === 1 ? 'text-blue-600 font-bold' : 'text-gray-500'}`}>
                             <Table size={24} /> <span>Data Entry</span>
                         </div>
