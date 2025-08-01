@@ -1,0 +1,32 @@
+{
+  "generalInfo": {
+    "reportingYear": 2025,
+    "startDate": "",
+    "endDate": "",
+    "organisationName": "",
+    "reportingBoundary": "",
+    "contactPerson": "",
+    "contactEmail": "",
+    "dataCollectionMethod": "",
+    "lastUpdateDate": "2025-08-01"
+  },
+  "scope1Data": [
+    {
+      "dataCategory": "a",
+      "subCategory": "s",
+      "fuelSourceType": "2",
+      "unit": "litres",
+      "quantity": "03",
+      "emissionFactor": "011298",
+      "emissionFactorSource": "",
+      "dataSource": "",
+      "collectionFrequency": "Annually",
+      "dataQualityNotes": "",
+      "notes": "",
+      "id": "1754049647162nz8tl"
+    }
+  ],
+  "scope2Data": [],
+  "scope3Data": [],
+  "step": 1
+}

@@ -325,7 +325,7 @@ export default function App() {
         loadState(true); // true to suppress the alert on initial load
     }, []);
 
-    const saveState = () => {
+    const saveState = async () => {
         const appState = {
             generalInfo,
             scope1Data,
@@ -333,25 +333,49 @@ export default function App() {
             scope3Data,
             step,
         };
-        localStorage.setItem('carbonCalculatorState', JSON.stringify(appState));
-        alert('Progress saved!');
+        try {
+            const response = await fetch('http://localhost:3001/api/save', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(appState),
+            });
+            if (response.ok) {
+                alert('Progress saved!');
+            } else {
+                alert('Failed to save progress.');
+            }
+        } catch (error) {
+            console.error('Error saving state:', error);
+            alert('Error saving progress.');
+        }
     };
 
-    const loadState = (isInitialLoad = false) => {
-        const savedState = localStorage.getItem('carbonCalculatorState');
-        if (savedState) {
-            const appState = JSON.parse(savedState);
-            setGeneralInfo(appState.generalInfo);
-            setScope1Data(appState.scope1Data);
-            setScope2Data(appState.scope2Data);
-            setScope3Data(appState.scope3Data);
-            setStep(appState.step || 1);
-            if (!isInitialLoad) {
-                alert('Progress loaded!');
+    const loadState = async (isInitialLoad = false) => {
+        try {
+            const response = await fetch('http://localhost:3001/api/load');
+            if (response.ok) {
+                const appState = await response.json();
+                if (Object.keys(appState).length > 0) {
+                    setGeneralInfo(appState.generalInfo);
+                    setScope1Data(appState.scope1Data);
+                    setScope2Data(appState.scope2Data);
+                    setScope3Data(app_state.scope3Data);
+                    setStep(appState.step || 1);
+                    if (!isInitialLoad) {
+                        alert('Progress loaded!');
+                    }
+                } else if (!isInitialLoad) {
+                    alert('No saved data found.');
+                }
+            } else if (!isInitialLoad) {
+                alert('Failed to load progress.');
             }
-        } else {
+        } catch (error) {
+            console.error('Error loading state:', error);
             if (!isInitialLoad) {
-                alert('No saved data found.');
+                alert('Error loading progress.');
             }
         }
     };
