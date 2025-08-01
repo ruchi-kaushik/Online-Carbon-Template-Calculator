@@ -1,34 +1,72 @@
 {
-  "HAIL": {
+  "DEMO": {
     "generalInfo": {
-      "reportingYear": 2025,
-      "startDate": "",
-      "endDate": "",
-      "organisationName": "HAIL",
-      "reportingBoundary": "",
+      "reportingYear": 2024,
+      "startDate": "2024-01-01",
+      "endDate": "2024-12-31",
+      "organisationName": "HAIL (Demo)",
+      "reportingBoundary": "Global Operations",
       "contactPerson": "Ruchi Kaushik",
-      "contactEmail": "",
-      "dataCollectionMethod": "",
+      "contactEmail": "ruchikaushik2021@gmail.com",
+      "dataCollectionMethod": "Automated",
       "lastUpdateDate": "2025-08-01"
     },
     "scope1Data": [
       {
-        "dataCategory": "Carbon",
-        "subCategory": "1231",
-        "fuelSourceType": "Petrol",
+        "id": "1",
+        "dataCategory": "Stationary Combustion",
+        "subCategory": "Natural Gas",
+        "fuelSourceType": "Boilers",
+        "unit": "kWh",
+        "quantity": 50000,
+        "emissionFactor": 0.18,
+        "date": "2024-03-15"
+      },
+      {
+        "id": "2",
+        "dataCategory": "Mobile Combustion",
+        "subCategory": "Company Vehicles",
+        "fuelSourceType": "Gasoline",
         "unit": "litres",
-        "quantity": "29",
-        "emissionFactor": 0,
-        "emissionFactorSource": "",
-        "dataSource": "",
-        "collectionFrequency": "Annually",
-        "dataQualityNotes": "",
-        "notes": "",
-        "id": "17540558862772kunq"
+        "quantity": 10000,
+        "emissionFactor": 2.31,
+        "date": "2024-06-20"
       }
     ],
-    "scope2Data": [],
-    "scope3Data": [],
-    "step": 1
+    "scope2Data": [
+      {
+        "id": "3",
+        "dataCategory": "Purchased Electricity",
+        "subCategory": "Grid",
+        "fuelSourceType": "Standard",
+        "unit": "MWh",
+        "quantity": 120,
+        "emissionFactor": 250,
+        "date": "2024-09-10"
+      }
+    ],
+    "scope3Data": [
+      {
+        "id": "4",
+        "dataCategory": "Business Travel",
+        "subCategory": "Air Travel",
+        "fuelSourceType": "Long-haul",
+        "unit": "km",
+        "quantity": 200000,
+        "emissionFactor": 0.15,
+        "date": "2024-11-05"
+      },
+      {
+        "id": "5",
+        "dataCategory": "Waste",
+        "subCategory": "Landfill",
+        "fuelSourceType": "Mixed Waste",
+        "unit": "tonnes",
+        "quantity": 50,
+        "emissionFactor": 1.5,
+        "date": "2024-12-20"
+      }
+    ],
+    "step": 2
   }
 }

@@ -1,7 +1,7 @@
 import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
 import React, { useState, useMemo, useRef, useEffect } from 'react';
-import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, LineChart, Line, CartesianGrid } from 'recharts';
 import { PlusCircle, Trash2, Edit, Save, XCircle, FileDown, AreaChart, ArrowRight, Table } from 'lucide-react';
 import Notification from './components/Notification';
 import ConfirmationDialog from './components/ConfirmationDialog';
@@ -16,6 +16,7 @@ const initialScopeData = {
     unit: 'litres',
     quantity: 0,
     emissionFactor: 0,
+    date: new Date().toISOString().slice(0, 10),
     emissionFactorSource: '',
     dataSource: '',
     collectionFrequency: 'Annually',
@@ -29,7 +30,8 @@ const editableKeys = [
     'fuelSourceType',
     'unit',
     'quantity',
-    'emissionFactor'
+    'emissionFactor',
+    'date'
 ];
 
 const modalEditableKeys = Object.keys(initialScopeData);
@@ -91,11 +93,24 @@ const ScopeTable = ({ title, data, setData, scopeColor, handleScopeChange, addRo
                                             value={item[key] ?? ''}
                                             onChange={handleScopeChange(setData)(item.id)}
                                             className="w-full p-2 bg-transparent border-gray-200 rounded-md">
-                                            <option>litres</option><option>kg</option><option>kWh</option><option>tonnes</option><option>m³</option>
+                                            <option>litres</option>
+                                            <option>kg</option>
+                                            <option>kWh</option>
+                                            <option>tonnes</option>
+                                            <option>m³</option>
+                                            <option>km</option>
+                                            <option>miles</option>
+                                            <option>MWh</option>
+                                            <option>GJ</option>
+                                            <option>pounds</option>
+                                            <option>gallons</option>
+                                            <option>cubic feet</option>
+                                            <option>hectares</option>
+                                            <option>acres</option>
                                         </select>
                                     ) : (
                                         <input
-                                            type={['quantity', 'emissionFactor'].includes(key) ? 'number' : 'text'}
+                                            type={key === 'date' ? 'date' : ['quantity', 'emissionFactor'].includes(key) ? 'number' : 'text'}
                                             {...(['quantity', 'emissionFactor'].includes(key) && { min: "0", step: "any" })}
                                             name={key}
                                             value={item[key] ?? ''}
@@ -226,7 +241,8 @@ const DashboardView = ({
     setStep, exportToPdf, dashboardRef,
     totalOverallEmissions, totalEmissions,
     scopeChartData, emissionsBySource, tablesRef,
-    scope1Data, scope2Data, scope3Data
+    scope1Data, scope2Data, scope3Data,
+    emissionsTrend, emissionsByFuelType
 }) => (
     <div>
         <div className="flex justify-between items-center mb-8">
@@ -283,6 +299,32 @@ const DashboardView = ({
                             <Tooltip formatter={(value) => `${value.toFixed(2)} Kg/CO2e`} />
                             <Legend />
                             <Bar dataKey="emissions" name="Emissions (Kg/CO2e)" fill="#8884d8" />
+                        </BarChart>
+                    </ResponsiveContainer>
+                </div>
+                <div className="lg:col-span-4 bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
+                    <h3 className="text-xl font-bold text-gray-700 mb-4">Emissions Trend</h3>
+                    <ResponsiveContainer width="100%" height={300}>
+                        <LineChart data={emissionsTrend}>
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <XAxis dataKey="month" />
+                            <YAxis />
+                            <Tooltip formatter={(value) => `${value.toFixed(2)} Kg/CO2e`} />
+                            <Legend />
+                            <Line type="monotone" dataKey="emissions" stroke="#8884d8" />
+                        </LineChart>
+                    </ResponsiveContainer>
+                </div>
+                <div className="lg:col-span-4 bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
+                    <h3 className="text-xl font-bold text-gray-700 mb-4">Emissions by Fuel Type</h3>
+                    <ResponsiveContainer width="100%" height={300}>
+                        <BarChart data={emissionsByFuelType}>
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <XAxis dataKey="name" />
+                            <YAxis />
+                            <Tooltip formatter={(value) => `${value.toFixed(2)} Kg/CO2e`} />
+                            <Legend />
+                            <Bar dataKey="emissions" fill="#82ca9d" />
                         </BarChart>
                     </ResponsiveContainer>
                 </div>
@@ -505,6 +547,28 @@ export default function App() {
             .slice(0, 10);
     }, [scope1Data, scope2Data, scope3Data]);
 
+    const emissionsTrend = useMemo(() => {
+        const allData = [...scope1Data, ...scope2Data, ...scope3Data];
+        const trendMap = {};
+        allData.forEach(item => {
+            const month = new Date(item.date).toLocaleString('default', { month: 'short' });
+            const emissions = calculateEmissions(item);
+            trendMap[month] = (trendMap[month] || 0) + emissions;
+        });
+        return Object.entries(trendMap).map(([month, emissions]) => ({ month, emissions }));
+    }, [scope1Data, scope2Data, scope3Data]);
+
+    const emissionsByFuelType = useMemo(() => {
+        const allData = [...scope1Data, ...scope2Data, ...scope3Data];
+        const fuelMap = {};
+        allData.forEach(item => {
+            const fuel = item.fuelSourceType || 'Uncategorized';
+            const emissions = calculateEmissions(item);
+            fuelMap[fuel] = (fuelMap[fuel] || 0) + emissions;
+        });
+        return Object.entries(fuelMap).map(([name, emissions]) => ({ name, emissions }));
+    }, [scope1Data, scope2Data, scope3Data]);
+
     const scopeChartData = [
         { name: 'Scope 1', value: totalEmissions.scope1 },
         { name: 'Scope 2', value: totalEmissions.scope2 },
@@ -675,6 +739,7 @@ export default function App() {
                         totalOverallEmissions={totalOverallEmissions} totalEmissions={totalEmissions}
                         scopeChartData={scopeChartData} emissionsBySource={emissionsBySource} tablesRef={tablesRef}
                         scope1Data={scope1Data} scope2Data={scope2Data} scope3Data={scope3Data}
+                        emissionsTrend={emissionsTrend} emissionsByFuelType={emissionsByFuelType}
                     />
                 )}
             </main>
