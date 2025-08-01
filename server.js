@@ -62,6 +62,28 @@ app.get('/api/load/:tag', (req, res) => {
     res.status(200).json(tagData);
 });
 
+app.get('/api/tags', (req, res) => {
+    const db = readDb();
+    res.status(200).json(Object.keys(db));
+});
+
+app.delete('/api/delete/:tag', (req, res) => {
+    const { tag } = req.params;
+    if (!tag) {
+        return res.status(400).send('Missing tag');
+    }
+
+    const db = readDb();
+    if (db[tag]) {
+        delete db[tag];
+        writeDb(db);
+        res.status(200).send('Data deleted successfully');
+    } else {
+        res.status(404).send('Tag not found');
+    }
+});
+
+
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
 });

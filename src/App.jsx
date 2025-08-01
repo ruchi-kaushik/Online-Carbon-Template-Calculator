@@ -3,6 +3,8 @@ import html2canvas from 'html2canvas';
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { PlusCircle, Trash2, Edit, Save, XCircle, FileDown, AreaChart, ArrowRight, Table } from 'lucide-react';
+import Notification from './components/Notification';
+import ConfirmationDialog from './components/ConfirmationDialog';
 
 // --- CONSTANTS AND UTILITY FUNCTIONS (TOP LEVEL) ---
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#AF19FF', '#FF4560'];
@@ -318,13 +320,36 @@ export default function App() {
     const [editingId, setEditingId] = useState(null);
     const [editingData, setEditingData] = useState({});
     const [tag, setTag] = useState('');
+    const [notification, setNotification] = useState(null);
+    const [recentTags, setRecentTags] = useState([]);
+    const [showClearConfirm, setShowClearConfirm] = useState(false);
 
     const dashboardRef = useRef(null);
     const tablesRef = useRef(null);
 
+    useEffect(() => {
+        fetchTags();
+    }, []);
+
+    const fetchTags = async () => {
+        try {
+            const response = await fetch('http://localhost:3001/api/tags');
+            if (response.ok) {
+                const tags = await response.json();
+                setRecentTags(tags);
+            }
+        } catch (error) {
+            console.error('Error fetching tags:', error);
+        }
+    };
+
+    const showNotification = (message, type = 'info') => {
+        setNotification({ message, type });
+    };
+
     const saveState = async () => {
         if (!tag) {
-            alert('Please enter a tag to save your progress.');
+            showNotification('Please enter a tag to save your progress.', 'error');
             return;
         }
         const appState = {
@@ -343,19 +368,20 @@ export default function App() {
                 body: JSON.stringify({ tag, data: appState }),
             });
             if (response.ok) {
-                alert(`Progress saved with tag: ${tag}`);
+                showNotification(`Progress saved with tag: ${tag}`, 'success');
+                fetchTags(); // Refresh the tags list
             } else {
-                alert('Failed to save progress.');
+                showNotification('Failed to save progress.', 'error');
             }
         } catch (error) {
             console.error('Error saving state:', error);
-            alert('Error saving progress.');
+            showNotification('Error saving progress.', 'error');
         }
     };
 
     const loadState = async () => {
         if (!tag) {
-            alert('Please enter a tag to load your progress.');
+            showNotification('Please enter a tag to load your progress.', 'error');
             return;
         }
         try {
@@ -368,17 +394,44 @@ export default function App() {
                     setScope2Data(appState.scope2Data || []);
                     setScope3Data(appState.scope3Data || []);
                     setStep(appState.step || 1);
-                    alert(`Progress loaded for tag: ${tag}`);
+                    showNotification(`Progress loaded for tag: ${tag}`, 'success');
                 } else {
-                    alert(`No saved data found for tag: ${tag}`);
+                    showNotification(`No saved data found for tag: ${tag}`, 'info');
                 }
             } else {
-                alert('Failed to load progress.');
+                showNotification('Failed to load progress.', 'error');
             }
         } catch (error) {
             console.error('Error loading state:', error);
-            alert('Error loading progress.');
+            showNotification('Error loading progress.', 'error');
         }
+    };
+
+    const clearData = async () => {
+        if (!tag) {
+            showNotification('Please enter a tag to clear.', 'error');
+            return;
+        }
+        setShowClearConfirm(true);
+    };
+
+    const handleClearConfirm = async () => {
+        try {
+            const response = await fetch(`http://localhost:3001/api/delete/${tag}`, {
+                method: 'DELETE',
+            });
+            if (response.ok) {
+                showNotification(`Data for tag "${tag}" has been cleared.`, 'success');
+                setTag('');
+                fetchTags(); // Refresh the tags list
+            } else {
+                showNotification('Failed to clear data.', 'error');
+            }
+        } catch (error) {
+            console.error('Error clearing data:', error);
+            showNotification('Error clearing data.', 'error');
+        }
+        setShowClearConfirm(false);
     };
 
     const handleGeneralInfoChange = (e) => {
@@ -464,7 +517,7 @@ export default function App() {
 
         if (!dashboardElement || !tablesElement) {
             console.error("PDF export failed: dashboard or tables ref not found.");
-            alert("Could not export to PDF, an element was not found.");
+            showNotification("Could not export to PDF, an element was not found.", "error");
             return;
         }
 
@@ -532,7 +585,7 @@ export default function App() {
 
         } catch (error) {
             console.error("An error occurred during PDF generation:", error);
-            alert("Sorry, there was an error creating the PDF. Please check the console for details.");
+            showNotification("Sorry, there was an error creating the PDF. Please check the console for details.", "error");
         } finally {
             // Turn off loading indicator
             // setLoading(false);
@@ -543,6 +596,13 @@ export default function App() {
 
     return (
         <div className="bg-gray-50 min-h-screen font-sans text-gray-800">
+            {notification && (
+                <Notification
+                    message={notification.message}
+                    type={notification.type}
+                    onDismiss={() => setNotification(null)}
+                />
+            )}
             <header className="bg-white shadow-md">
                 <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
                     <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-green-500">
@@ -562,6 +622,9 @@ export default function App() {
                         <button onClick={loadState} className="flex items-center gap-2 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors">
                             Load
                         </button>
+                        <button onClick={clearData} className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-transform transform hover:scale-105 shadow-md">
+                            Clear
+                        </button>
                     </div>
                     <div className="flex items-center space-x-4">
                         <div className={`flex items-center space-x-2 ${step === 1 ? 'text-blue-600 font-bold' : 'text-gray-500'}`}>
@@ -573,8 +636,29 @@ export default function App() {
                         </div>
                     </div>
                 </div>
+                {recentTags.length > 0 && (
+                    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-2 flex items-center space-x-2">
+                        <span className="font-semibold">Recent Tags:</span>
+                        {recentTags.map((t) => (
+                            <button
+                                key={t}
+                                onClick={() => setTag(t)}
+                                className="px-3 py-1 bg-gray-200 text-gray-700 rounded-full hover:bg-gray-300 text-sm"
+                            >
+                                {t}
+                            </button>
+                        ))}
+                    </div>
+                )}
             </header>
             <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                {showClearConfirm && (
+                    <ConfirmationDialog
+                        message={`Are you sure you want to delete the data for tag "${tag}"? This action cannot be undone.`}
+                        onConfirm={handleClearConfirm}
+                        onCancel={() => setShowClearConfirm(false)}
+                    />
+                )}
                 {step === 1 && (
                     <DataEntryView
                         generalInfo={generalInfo} handleGeneralInfoChange={handleGeneralInfoChange}

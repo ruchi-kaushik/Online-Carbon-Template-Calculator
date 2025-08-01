@@ -62,22 +62,5 @@
     "scope2Data": [],
     "scope3Data": [],
     "step": 1
-  },
-  "HAIL": {
-    "generalInfo": {
-      "reportingYear": 2025,
-      "startDate": "",
-      "endDate": "",
-      "organisationName": "HAIL",
-      "reportingBoundary": "",
-      "contactPerson": "Ruchi Kaushik",
-      "contactEmail": "",
-      "dataCollectionMethod": "",
-      "lastUpdateDate": "2025-08-01"
-    },
-    "scope1Data": [],
-    "scope2Data": [],
-    "scope3Data": [],
-    "step": 1
   }
 }
