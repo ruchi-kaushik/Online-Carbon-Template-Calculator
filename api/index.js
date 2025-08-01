@@ -3,6 +3,7 @@ import cors from 'cors';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import demoData from '../db.json' assert { type: 'json' };
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -13,9 +14,9 @@ const DB_FILE = path.join('/tmp', 'db.json');
 app.use(cors());
 app.use(express.json());
 
-// Ensure db.json exists in the /tmp directory
+// Initialize the database in the /tmp directory with the demo data
 if (!fs.existsSync(DB_FILE)) {
-    fs.writeFileSync(DB_FILE, JSON.stringify({}));
+    fs.writeFileSync(DB_FILE, JSON.stringify(demoData));
 }
 
 const readDb = () => {
@@ -63,7 +64,11 @@ app.get('/api/load/:tag', (req, res) => {
 
 app.get('/api/tags', (req, res) => {
     const db = readDb();
-    res.status(200).json(Object.keys(db));
+    const tags = Object.keys(db);
+    if (!tags.includes('DEMO')) {
+        tags.unshift('DEMO');
+    }
+    res.status(200).json(tags);
 });
 
 app.delete('/api/delete/:tag', (req, res) => {
