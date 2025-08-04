@@ -280,34 +280,33 @@ const DashboardView = ({
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
-                    <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
-                        <h3 className="text-xl font-bold text-gray-700 mb-4 text-center">Emissions by Scope</h3>
-                        <ResponsiveContainer width="100%" height={300}>
-                            <PieChart>
-                                <Pie data={scopeChartData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={100} label>
-                                    {scopeChartData.map((entry, index) => (
-                                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                    ))}
-                                </Pie>
-                                <Tooltip formatter={(value) => `${value.toFixed(2)} Kg/CO2e`} />
-                                <Legend />
-                            </PieChart>
-                        </ResponsiveContainer>
-                    </div>
-                    <div ref={barChartRef} className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
-                        <h3 className="text-xl font-bold text-gray-700 mb-4">Top Emission Sources</h3>
-                        <ResponsiveContainer width="100%" height={300}>
-                            <BarChart data={emissionsBySource} layout="vertical" margin={{ top: 5, right: 30, left: 100, bottom: 20 }}>
-                                <XAxis type="number" label={{ value: 'Emissions (Kg/CO2e)', position: 'insideBottom', offset: -40 }} />
-                                <YAxis dataKey="name" type="category" width={100} tick={{ fontSize: 12 }} label={{ value: 'Sub-Category', angle: -90, position: 'insideLeft', offset: -80 }} />
-                                <Tooltip formatter={(value) => `${value.toFixed(2)} Kg/CO2e`} />
-                                <Legend />
-                                <Bar dataKey="emissions" name="Emissions (Kg/CO2e)" fill="#8884d8" />
-                            </BarChart>
-                        </ResponsiveContainer>
-                    </div>
+                <div className="mt-8 bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
+                    <h3 className="text-xl font-bold text-gray-700 mb-4 text-center">Emissions by Scope</h3>
+                    <ResponsiveContainer width="100%" height={300}>
+                        <PieChart>
+                            <Pie data={scopeChartData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={100} label>
+                                {scopeChartData.map((entry, index) => (
+                                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                ))}
+                            </Pie>
+                            <Tooltip formatter={(value) => `${value.toFixed(2)} Kg/CO2e`} />
+                            <Legend />
+                        </PieChart>
+                    </ResponsiveContainer>
                 </div>
+            </div>
+
+            <div ref={barChartRef} className="mt-8 bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
+                <h3 className="text-xl font-bold text-gray-700 mb-4 text-center">Top Emission Sources</h3>
+                <ResponsiveContainer width="100%" height={300}>
+                    <BarChart data={emissionsBySource} layout="vertical" margin={{ top: 5, right: 30, left: 100, bottom: 20 }}>
+                        <XAxis type="number" label={{ value: 'Emissions (Kg/CO2e)', position: 'insideBottom', offset: -40 }} />
+                        <YAxis dataKey="name" type="category" width={100} tick={{ fontSize: 12 }} label={{ value: 'Sub-Category', angle: -90, position: 'insideLeft', offset: -80 }} />
+                        <Tooltip formatter={(value) => `${value.toFixed(2)} Kg/CO2e`} />
+                        <Legend />
+                        <Bar dataKey="emissions" name="Emissions (Kg/CO2e)" fill="#8884d8" />
+                    </BarChart>
+                </ResponsiveContainer>
             </div>
 
             <div ref={waterfallRef} className="mt-8 bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
