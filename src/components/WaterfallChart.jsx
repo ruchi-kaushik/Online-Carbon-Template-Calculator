@@ -1,32 +1,39 @@
 import React, { useMemo } from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LabelList } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LabelList, Cell } from 'recharts';
 
 const calculateEmissions = (item) => (parseFloat(item.quantity) || 0) * (parseFloat(item.emissionFactor) || 0);
 
+const WATERFALL_COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#AF19FF', '#FF4560', '#8884d8', '#82ca9d', '#ffc658', '#ff7300', '#d0ed57', '#a4de6c', '#8dd1e1', '#83a6ed', '#8e44ad', '#c0392b'];
+
 const WaterfallChart = ({ scope1Data, scope2Data, scope3Data }) => {
     const waterfallData = useMemo(() => {
-        const sum = (data) => data.reduce((acc, item) => acc + calculateEmissions(item), 0);
+        const processScope = (data) => {
+            const byCategory = data.reduce((acc, item) => {
+                const category = item.subCategory || 'Uncategorized';
+                const emissions = calculateEmissions(item);
+                if (!acc[category]) {
+                    acc[category] = 0;
+                }
+                acc[category] += emissions;
+                return acc;
+            }, {});
+            return Object.entries(byCategory).map(([name, value]) => ({ name, value }));
+        };
 
-        const scope1Total = sum(scope1Data);
-        const scope2Total = sum(scope2Data);
-
-        const scope3ByCategory = scope3Data.reduce((acc, item) => {
-            const category = item.subCategory || 'Uncategorized';
-            const emissions = calculateEmissions(item);
-            if (!acc[category]) {
-                acc[category] = 0;
-            }
-            acc[category] += emissions;
-            return acc;
-        }, {});
+        const scope1Categories = processScope(scope1Data);
+        const scope2Categories = processScope(scope2Data);
+        const scope3Categories = processScope(scope3Data);
 
         let cumulative = 0;
-        const data = [
-            { name: 'Scope 1', value: scope1Total, range: [cumulative, cumulative += scope1Total] },
-            { name: 'Scope 2', value: scope2Total, range: [cumulative, cumulative += scope2Total] },
-        ];
+        const data = [];
 
-        Object.entries(scope3ByCategory).forEach(([name, value]) => {
+        scope1Categories.forEach(({ name, value }) => {
+            data.push({ name, value, range: [cumulative, cumulative += value] });
+        });
+        scope2Categories.forEach(({ name, value }) => {
+            data.push({ name, value, range: [cumulative, cumulative += value] });
+        });
+        scope3Categories.forEach(({ name, value }) => {
             data.push({ name, value, range: [cumulative, cumulative += value] });
         });
 
@@ -54,15 +61,15 @@ const WaterfallChart = ({ scope1Data, scope2Data, scope3Data }) => {
                         return `${props.payload.value.toFixed(2)} Kg/CO2e`;
                     }} />
                     <Legend />
-                    <Bar dataKey="range" name="Emissions" fill="#8884d8">
+                    <Bar dataKey="range" name="Emissions">
                         {waterfallData.map((entry, index) => (
-                            <LabelList
-                                key={index}
-                                dataKey="value"
-                                position="right"
-                                formatter={(value) => (entry.name === 'Total' ? '' : value.toFixed(2))}
-                            />
+                            <Cell key={`cell-${index}`} fill={entry.name === 'Total' ? '#555' : WATERFALL_COLORS[index % WATERFALL_COLORS.length]} />
                         ))}
+                        <LabelList
+                            dataKey="value"
+                            position="right"
+                            formatter={(value) => (value > 0 ? value.toFixed(2) : '')}
+                        />
                     </Bar>
                 </BarChart>
             </ResponsiveContainer>

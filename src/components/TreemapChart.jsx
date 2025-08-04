@@ -1,9 +1,33 @@
 import React, { useMemo } from 'react';
 import { ResponsiveContainer, Treemap, Tooltip } from 'recharts';
 
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#AF19FF', '#FF4560', '#8884d8', '#82ca9d', '#ffc658', '#ff7300', '#d0ed57', '#a4de6c', '#8dd1e1', '#83a6ed', '#8e44ad', '#c0392b'];
-
 const calculateEmissions = (item) => (parseFloat(item.quantity) || 0) * (parseFloat(item.emissionFactor) || 0);
+
+const SCOPE_COLORS = {
+    'Scope 1': '#0088FE',
+    'Scope 2': '#00C49F',
+    'Scope 3': '#FFBB28',
+};
+
+const shadeColor = (color, percent) => {
+    let f = parseInt(color.slice(1), 16),
+        t = percent < 0 ? 0 : 255,
+        p = percent < 0 ? percent * -1 : percent,
+        R = f >> 16,
+        G = (f >> 8) & 0x00ff,
+        B = f & 0x0000ff;
+    return (
+        '#' +
+        (
+            0x1000000 +
+            (Math.round((t - R) * p) + R) * 0x10000 +
+            (Math.round((t - G) * p) + G) * 0x100 +
+            (Math.round((t - B) * p) + B)
+        )
+            .toString(16)
+            .slice(1)
+    );
+};
 
 const CustomTooltip = ({ active, payload }) => {
     if (active && payload && payload.length) {
@@ -21,42 +45,36 @@ const CustomTooltip = ({ active, payload }) => {
 
 const TreemapChart = ({ scope1Data, scope2Data, scope3Data }) => {
     const treemapData = useMemo(() => {
-        const sum = (data) => data.reduce((acc, item) => acc + calculateEmissions(item), 0);
+        const processScopeData = (data, scopeName) => {
+            const byCategory = data.reduce((acc, item) => {
+                const category = item.subCategory || 'Uncategorized';
+                const emissions = calculateEmissions(item);
+                if (!acc[category]) {
+                    acc[category] = 0;
+                }
+                acc[category] += emissions;
+                return acc;
+            }, {});
 
-        const scope1Total = sum(scope1Data);
-        const scope2Total = sum(scope2Data);
+            const children = Object.entries(byCategory).map(([name, value]) => ({
+                name,
+                value,
+            }));
 
-        const scope3ByCategory = scope3Data.reduce((acc, item) => {
-            const category = item.subCategory || 'Uncategorized';
-            const emissions = calculateEmissions(item);
-            if (!acc[category]) {
-                acc[category] = 0;
-            }
-            acc[category] += emissions;
-            return acc;
-        }, {});
+            const total = children.reduce((acc, child) => acc + child.value, 0);
 
-        const scope3Children = Object.entries(scope3ByCategory).map(([name, value]) => ({
-            name,
-            value,
-        }));
+            return {
+                name: scopeName,
+                value: total,
+                children,
+            };
+        };
 
         return [
-            {
-                name: 'Scope 1',
-                value: scope1Total,
-                children: [{ name: 'Scope 1', value: scope1Total }],
-            },
-            {
-                name: 'Scope 2',
-                value: scope2Total,
-                children: [{ name: 'Scope 2', value: scope2Total }],
-            },
-            {
-                name: 'Scope 3',
-                children: scope3Children,
-            },
-        ].filter(item => (item.value > 0 || (item.children && item.children.length > 0)));
+            processScopeData(scope1Data, 'Scope 1'),
+            processScopeData(scope2Data, 'Scope 2'),
+            processScopeData(scope3Data, 'Scope 3'),
+        ].filter(item => item.value > 0);
     }, [scope1Data, scope2Data, scope3Data]);
 
     return (
@@ -69,7 +87,7 @@ const TreemapChart = ({ scope1Data, scope2Data, scope3Data }) => {
                     ratio={4 / 3}
                     stroke="#fff"
                     fill="#8884d8"
-                    content={<CustomizedContent colors={COLORS} />}
+                    content={<CustomizedContent />}
                 >
                     <Tooltip content={<CustomTooltip />} />
                 </Treemap>
@@ -78,7 +96,14 @@ const TreemapChart = ({ scope1Data, scope2Data, scope3Data }) => {
     );
 };
 
-const CustomizedContent = ({ root, depth, x, y, width, height, index, colors, name }) => {
+const CustomizedContent = ({ root, depth, x, y, width, height, index, name, parent }) => {
+    const parentName = root.children[index]?.parent?.name || name;
+    const baseColor = SCOPE_COLORS[parentName] || '#8884d8';
+    
+    // This logic needs to be improved to get the correct parent for shading
+    const shade = depth === 1 ? 0 : (index % 5) * 0.1;
+    const color = shadeColor(baseColor, shade);
+
     return (
         <g>
             <rect
@@ -87,7 +112,7 @@ const CustomizedContent = ({ root, depth, x, y, width, height, index, colors, na
                 width={width}
                 height={height}
                 style={{
-                    fill: colors[index % colors.length],
+                    fill: color,
                     stroke: '#fff',
                     strokeWidth: 2 / (depth + 1e-10),
                     strokeOpacity: 1 / (depth + 1e-10),

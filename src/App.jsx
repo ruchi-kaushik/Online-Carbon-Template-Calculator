@@ -358,9 +358,19 @@ export default function App() {
         lastUpdateDate: new Date().toISOString().slice(0, 10),
     });
 
-    const [scope1Data, setScope1Data] = useState([]);
-    const [scope2Data, setScope2Data] = useState([]);
-    const [scope3Data, setScope3Data] = useState([]);
+    const [scope1Data, setScope1Data] = useState([
+        { id: '1', dataCategory: 'Stationary Combustion', subCategory: 'Natural Gas', fuelSourceType: 'Natural Gas', unit: 'kWh', quantity: 1200, emissionFactor: 0.2, date: '2023-01-15' },
+        { id: '2', dataCategory: 'Mobile Combustion', subCategory: 'Company Vehicles', fuelSourceType: 'Diesel', unit: 'litres', quantity: 500, emissionFactor: 2.7, date: '2023-02-20' },
+    ]);
+    const [scope2Data, setScope2Data] = useState([
+        { id: '3', dataCategory: 'Purchased Electricity', subCategory: 'Grid Electricity', fuelSourceType: 'Grid Mix', unit: 'kWh', quantity: 8000, emissionFactor: 0.4, date: '2023-03-10' },
+    ]);
+    const [scope3Data, setScope3Data] = useState([
+        { id: '4', dataCategory: 'Upstream', subCategory: 'Business Travel', fuelSourceType: 'Flights', unit: 'km', quantity: 15000, emissionFactor: 0.15, date: '2023-04-05' },
+        { id: '5', dataCategory: 'Upstream', subCategory: 'Employee Commuting', fuelSourceType: 'Car', unit: 'km', quantity: 50000, emissionFactor: 0.12, date: '2023-05-12' },
+        { id: '6', dataCategory: 'Downstream', subCategory: 'Waste from Operations', fuelSourceType: 'Landfill', unit: 'kg', quantity: 1200, emissionFactor: 1.5, date: '2023-06-25' },
+        { id: '7', dataCategory: 'Upstream', subCategory: 'Purchased Goods', fuelSourceType: 'Office Supplies', unit: 'kg', quantity: 300, emissionFactor: 0.5, date: '2023-07-18' },
+    ]);
 
     const [editingId, setEditingId] = useState(null);
     const [editingData, setEditingData] = useState({});
