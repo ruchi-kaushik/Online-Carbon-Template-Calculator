@@ -243,7 +243,7 @@ const DashboardView = ({
     totalOverallEmissions, totalEmissions,
     scopeChartData, emissionsBySource, tablesRef,
     scope1Data, scope2Data, scope3Data,
-    waterfallRef, bubbleRef, barChartRef
+    waterfallRef, bubbleRef
 }) => (
     <div>
         <div className="flex justify-between items-center mb-8">
@@ -255,32 +255,29 @@ const DashboardView = ({
                 <FileDown size={20} /> Export PDF
             </button>
         </div>
-        <div className="p-4 bg-gray-50 rounded-2xl">
-            <div ref={dashboardRef}>
-                <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-                    <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100 flex flex-col justify-center items-center lg:col-span-1">
-                        <h3 className="text-lg font-semibold text-gray-500 mb-2">Total Emissions</h3>
-                        <p className="text-5xl font-bold text-gray-800">{totalOverallEmissions.toFixed(2)}</p>
-                        <p className="text-gray-500 mt-1">Kg/CO2e</p>
-                    </div>
-                    <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
-                        <h3 className="text-lg font-semibold text-gray-500 mb-2">Scope 1</h3>
-                        <p className="text-4xl font-bold text-blue-500">{totalEmissions.scope1.toFixed(2)}</p>
-                        <p className="text-gray-500 mt-1">Kg/CO2e</p>
-                    </div>
-                    <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
-                        <h3 className="text-lg font-semibold text-gray-500 mb-2">Scope 2</h3>
-                        <p className="text-4xl font-bold text-green-500">{totalEmissions.scope2.toFixed(2)}</p>
-                        <p className="text-gray-500 mt-1">Kg/CO2e</p>
-                    </div>
-                    <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
-                        <h3 className="text-lg font-semibold text-gray-500 mb-2">Scope 3</h3>
-                        <p className="text-4xl font-bold text-amber-500">{totalEmissions.scope3.toFixed(2)}</p>
-                        <p className="text-gray-500 mt-1">Kg/CO2e</p>
-                    </div>
+        <div ref={dashboardRef} className="p-4 bg-gray-50 rounded-2xl">
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+                <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100 flex flex-col justify-center items-center lg:col-span-1">
+                    <h3 className="text-lg font-semibold text-gray-500 mb-2">Total Emissions</h3>
+                    <p className="text-5xl font-bold text-gray-800">{totalOverallEmissions.toFixed(2)}</p>
+                    <p className="text-gray-500 mt-1">Kg/CO2e</p>
                 </div>
-
-                <div className="mt-8 bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
+                <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
+                    <h3 className="text-lg font-semibold text-gray-500 mb-2">Scope 1</h3>
+                    <p className="text-4xl font-bold text-blue-500">{totalEmissions.scope1.toFixed(2)}</p>
+                    <p className="text-gray-500 mt-1">Kg/CO2e</p>
+                </div>
+                <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
+                    <h3 className="text-lg font-semibold text-gray-500 mb-2">Scope 2</h3>
+                    <p className="text-4xl font-bold text-green-500">{totalEmissions.scope2.toFixed(2)}</p>
+                    <p className="text-gray-500 mt-1">Kg/CO2e</p>
+                </div>
+                <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
+                    <h3 className="text-lg font-semibold text-gray-500 mb-2">Scope 3</h3>
+                    <p className="text-4xl font-bold text-amber-500">{totalEmissions.scope3.toFixed(2)}</p>
+                    <p className="text-gray-500 mt-1">Kg/CO2e</p>
+                </div>
+                <div className="lg:col-span-2 bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
                     <h3 className="text-xl font-bold text-gray-700 mb-4 text-center">Emissions by Scope</h3>
                     <ResponsiveContainer width="100%" height={300}>
                         <PieChart>
@@ -294,26 +291,24 @@ const DashboardView = ({
                         </PieChart>
                     </ResponsiveContainer>
                 </div>
-            </div>
-
-            <div ref={barChartRef} className="mt-8 bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
-                <h3 className="text-xl font-bold text-gray-700 mb-4 text-center">Top Emission Sources</h3>
-                <ResponsiveContainer width="100%" height={300}>
-                    <BarChart data={emissionsBySource} layout="vertical" margin={{ top: 5, right: 30, left: 100, bottom: 20 }}>
-                        <XAxis type="number" label={{ value: 'Emissions (Kg/CO2e)', position: 'insideBottom', offset: -40 }} />
-                        <YAxis dataKey="name" type="category" width={100} tick={{ fontSize: 12 }} label={{ value: 'Sub-Category', angle: -90, position: 'insideLeft', offset: -80 }} />
-                        <Tooltip formatter={(value) => `${value.toFixed(2)} Kg/CO2e`} />
-                        <Legend />
-                        <Bar dataKey="emissions" name="Emissions (Kg/CO2e)" fill="#8884d8" />
-                    </BarChart>
-                </ResponsiveContainer>
-            </div>
-
-            <div ref={waterfallRef} className="mt-8 bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
-                <WaterfallChart scope1Data={scope1Data} scope2Data={scope2Data} scope3Data={scope3Data} />
-            </div>
-            <div ref={bubbleRef} className="mt-8 bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
-                <BubbleChart scope1Data={scope1Data} scope2Data={scope2Data} scope3Data={scope3Data} />
+                <div className="lg:col-span-2 bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
+                    <h3 className="text-xl font-bold text-gray-700 mb-4">Top Emission Sources</h3>
+                    <ResponsiveContainer width="100%" height={300}>
+                        <BarChart data={emissionsBySource} layout="vertical" margin={{ top: 5, right: 30, left: 100, bottom: 20 }}>
+                            <XAxis type="number" label={{ value: 'Emissions (Kg/CO2e)', position: 'insideBottom', offset: -40 }} />
+                            <YAxis dataKey="name" type="category" width={100} tick={{ fontSize: 12 }} label={{ value: 'Sub-Category', angle: -90, position: 'insideLeft', offset: -80 }} />
+                            <Tooltip formatter={(value) => `${value.toFixed(2)} Kg/CO2e`} />
+                            <Legend />
+                            <Bar dataKey="emissions" name="Emissions (Kg/CO2e)" fill="#8884d8" />
+                        </BarChart>
+                    </ResponsiveContainer>
+                </div>
+                <div ref={waterfallRef} className="lg:col-span-4">
+                    <WaterfallChart scope1Data={scope1Data} scope2Data={scope2Data} scope3Data={scope3Data} />
+                </div>
+                <div ref={bubbleRef} className="lg:col-span-4">
+                    <BubbleChart scope1Data={scope1Data} scope2Data={scope2Data} scope3Data={scope3Data} />
+                </div>
             </div>
         </div>
         <div ref={tablesRef} className="mt-8 bg-white p-4">
@@ -366,7 +361,6 @@ export default function App() {
     const tablesRef = useRef(null);
     const waterfallRef = useRef(null);
     const bubbleRef = useRef(null);
-    const barChartRef = useRef(null);
 
     useEffect(() => {
         fetchTags();
@@ -576,66 +570,82 @@ export default function App() {
 
     const exportToPdf = async () => {
         const dashboardElement = dashboardRef.current;
-        const barChartElement = barChartRef.current;
+        const tablesElement = tablesRef.current;
         const waterfallElement = waterfallRef.current;
         const bubbleElement = bubbleRef.current;
-        const tablesElement = tablesRef.current;
 
-        if (!dashboardElement || !barChartElement || !waterfallElement || !bubbleElement || !tablesElement) {
+        if (!dashboardElement || !tablesElement || !waterfallElement || !bubbleElement) {
             console.error("PDF export failed: a ref was not found.");
             showNotification("Could not export to PDF, an element was not found.", "error");
             return;
         }
 
+        // Use a loading indicator if you have one
         // setLoading(true);
 
         try {
-            const canvasOptions = { scale: 2, useCORS: true, backgroundColor: '#ffffff' };
-            const dashboardCanvas = await html2canvas(dashboardElement, canvasOptions);
-            const barChartCanvas = await html2canvas(barChartElement, canvasOptions);
-            const waterfallCanvas = await html2canvas(waterfallElement, canvasOptions);
-            const bubbleCanvas = await html2canvas(bubbleElement, canvasOptions);
-            const tablesCanvas = await html2canvas(tablesElement, canvasOptions);
+            // Step 1: Generate canvases for both sections
+            const dashboardCanvas = await html2canvas(dashboardElement, {
+                scale: 2,
+                useCORS: true,
+                backgroundColor: '#ffffff'
+            });
+
+            const tablesCanvas = await html2canvas(tablesElement, {
+                scale: 2,
+                useCORS: true,
+                backgroundColor: '#ffffff'
+            });
+            const waterfallCanvas = await html2canvas(waterfallElement, {
+                scale: 2,
+                useCORS: true,
+                backgroundColor: '#ffffff'
+            });
+            const bubbleCanvas = await html2canvas(bubbleElement, {
+                scale: 2,
+                useCORS: true,
+                backgroundColor: '#ffffff'
+            });
 
             const dashboardImgData = dashboardCanvas.toDataURL('image/png');
-            const barChartImgData = barChartCanvas.toDataURL('image/png');
+            const tablesImgData = tablesCanvas.toDataURL('image/png');
             const waterfallImgData = waterfallCanvas.toDataURL('image/png');
             const bubbleImgData = bubbleCanvas.toDataURL('image/png');
-            const tablesImgData = tablesCanvas.toDataURL('image/png');
 
+            // Step 2: Set up the PDF document
             const pdf = new jsPDF('p', 'mm', 'a4');
             const pdfWidth = pdf.internal.pageSize.getWidth();
             const pdfHeight = pdf.internal.pageSize.getHeight();
+            let position = 0; // Tracks the vertical position on the PDF
 
-            const addImageToPdf = (imgData, position = 15) => {
-                const imgProps = pdf.getImageProperties(imgData);
-                const imgHeight = (imgProps.height * pdfWidth) / imgProps.width;
-                pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, imgHeight);
-                return imgHeight;
-            };
-
-            // Page 1: Header and Summary (including Pie Chart)
+            // Step 3: Add the header
             pdf.setFontSize(20);
             pdf.text(`${generalInfo.organisationName} - Carbon Footprint Report`, 14, 22);
             pdf.setFontSize(12);
             pdf.text(`Reporting Year: ${generalInfo.reportingYear}`, 14, 30);
-            addImageToPdf(dashboardImgData, 40);
+            position = 40; // Set starting position after the header
 
-            // Subsequent pages for each chart
-            const addChartPage = (imgData) => {
-                pdf.addPage();
-                addImageToPdf(imgData);
-            };
+            // Step 4: Add the dashboard image
+            const dashboardImgProps = pdf.getImageProperties(dashboardImgData);
+            const dashboardImgHeight = (dashboardImgProps.height * pdfWidth) / dashboardImgProps.width;
+            pdf.addImage(dashboardImgData, 'PNG', 0, position, pdfWidth, dashboardImgHeight);
+            position += dashboardImgHeight;
 
-            addChartPage(barChartImgData);
-            addChartPage(waterfallImgData);
-            addChartPage(bubbleImgData);
+            const waterfallImgProps = pdf.getImageProperties(waterfallImgData);
+            const waterfallImgHeight = (waterfallImgProps.height * pdfWidth) / waterfallImgProps.width;
+            pdf.addPage();
+            pdf.addImage(waterfallImgData, 'PNG', 0, 0, pdfWidth, waterfallImgHeight);
 
-            // Detailed Data Tables
+            const bubbleImgProps = pdf.getImageProperties(bubbleImgData);
+            const bubbleImgHeight = (bubbleImgProps.height * pdfWidth) / bubbleImgProps.width;
+            pdf.addPage();
+            pdf.addImage(bubbleImgData, 'PNG', 0, 0, pdfWidth, bubbleImgHeight);
+
+            // Step 5: Add the "Detailed Data" heading and paginate the tables image
             pdf.addPage();
             pdf.setFontSize(20);
             pdf.text('Detailed Emissions Data', 14, 22);
-            let position = 30;
+            position = 30; // Reset position for the new page
 
             const tablesImgProps = pdf.getImageProperties(tablesImgData);
             const tablesImgHeight = (tablesImgProps.height * pdfWidth) / tablesImgProps.width;
@@ -643,20 +653,22 @@ export default function App() {
 
             while (heightLeft > 0) {
                 pdf.addImage(tablesImgData, 'PNG', 0, position, pdfWidth, tablesImgHeight);
-                heightLeft -= (pdfHeight - position);
+                heightLeft -= (pdfHeight - position); // Subtract the height of the drawn portion
 
                 if (heightLeft > 0) {
                     pdf.addPage();
-                    position = -heightLeft;
+                    position = -heightLeft; // On the new page, start drawing from a negative Y to show the next part
                 }
             }
             
+            // Step 6: Save the PDF
             pdf.save(`${generalInfo.organisationName}_Carbon_Report_${generalInfo.reportingYear}.pdf`);
 
         } catch (error) {
             console.error("An error occurred during PDF generation:", error);
             showNotification("Sorry, there was an error creating the PDF. Please check the console for details.", "error");
         } finally {
+            // Turn off loading indicator
             // setLoading(false);
         }
     };
@@ -746,7 +758,6 @@ export default function App() {
                         scope1Data={scope1Data} scope2Data={scope2Data} scope3Data={scope3Data}
                         waterfallRef={waterfallRef}
                         bubbleRef={bubbleRef}
-                        barChartRef={barChartRef}
                     />
                 )}
             </main>
