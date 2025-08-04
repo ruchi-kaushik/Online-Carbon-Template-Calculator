@@ -244,8 +244,7 @@ const DashboardView = ({
     totalOverallEmissions, totalEmissions,
     scopeChartData, emissionsBySource, tablesRef,
     scope1Data, scope2Data, scope3Data,
-    emissionsTrend, emissionsByFuelType,
-    treemapRef, waterfallRef, bubbleRef
+    waterfallRef, bubbleRef
 }) => (
     <div>
         <div className="flex justify-between items-center mb-8">
@@ -296,43 +295,14 @@ const DashboardView = ({
                 <div className="lg:col-span-2 bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
                     <h3 className="text-xl font-bold text-gray-700 mb-4">Top Emission Sources</h3>
                     <ResponsiveContainer width="100%" height={300}>
-                        <BarChart data={emissionsBySource} layout="vertical" margin={{ top: 5, right: 20, left: 100, bottom: 5 }}>
-                            <XAxis type="number" />
-                            <YAxis dataKey="name" type="category" width={100} tick={{ fontSize: 12 }} />
+                        <BarChart data={emissionsBySource} layout="vertical" margin={{ top: 5, right: 30, left: 100, bottom: 20 }}>
+                            <XAxis type="number" label={{ value: 'Emissions (Kg/CO2e)', position: 'insideBottom', offset: -40 }} />
+                            <YAxis dataKey="name" type="category" width={100} tick={{ fontSize: 12 }} label={{ value: 'Sub-Category', angle: -90, position: 'insideLeft', offset: -80 }} />
                             <Tooltip formatter={(value) => `${value.toFixed(2)} Kg/CO2e`} />
                             <Legend />
                             <Bar dataKey="emissions" name="Emissions (Kg/CO2e)" fill="#8884d8" />
                         </BarChart>
                     </ResponsiveContainer>
-                </div>
-                <div className="lg:col-span-4 bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
-                    <h3 className="text-xl font-bold text-gray-700 mb-4">Emissions Trend</h3>
-                    <ResponsiveContainer width="100%" height={300}>
-                        <LineChart data={emissionsTrend}>
-                            <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis dataKey="month" />
-                            <YAxis />
-                            <Tooltip formatter={(value) => `${value.toFixed(2)} Kg/CO2e`} />
-                            <Legend />
-                            <Line type="monotone" dataKey="emissions" stroke="#8884d8" />
-                        </LineChart>
-                    </ResponsiveContainer>
-                </div>
-                <div className="lg:col-span-4 bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
-                    <h3 className="text-xl font-bold text-gray-700 mb-4">Emissions by Fuel Type</h3>
-                    <ResponsiveContainer width="100%" height={300}>
-                        <BarChart data={emissionsByFuelType}>
-                            <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis dataKey="name" />
-                            <YAxis />
-                            <Tooltip formatter={(value) => `${value.toFixed(2)} Kg/CO2e`} />
-                            <Legend />
-                            <Bar dataKey="emissions" fill="#82ca9d" />
-                        </BarChart>
-                    </ResponsiveContainer>
-                </div>
-                <div ref={treemapRef} className="lg:col-span-4">
-                    <TreemapChart scope1Data={scope1Data} scope2Data={scope2Data} scope3Data={scope3Data} />
                 </div>
                 <div ref={waterfallRef} className="lg:col-span-4">
                     <WaterfallChart scope1Data={scope1Data} scope2Data={scope2Data} scope3Data={scope3Data} />
@@ -390,7 +360,6 @@ export default function App() {
 
     const dashboardRef = useRef(null);
     const tablesRef = useRef(null);
-    const treemapRef = useRef(null);
     const waterfallRef = useRef(null);
     const bubbleRef = useRef(null);
 
@@ -800,8 +769,6 @@ export default function App() {
                         totalOverallEmissions={totalOverallEmissions} totalEmissions={totalEmissions}
                         scopeChartData={scopeChartData} emissionsBySource={emissionsBySource} tablesRef={tablesRef}
                         scope1Data={scope1Data} scope2Data={scope2Data} scope3Data={scope3Data}
-                        emissionsTrend={emissionsTrend} emissionsByFuelType={emissionsByFuelType}
-                        treemapRef={treemapRef}
                         waterfallRef={waterfallRef}
                         bubbleRef={bubbleRef}
                     />

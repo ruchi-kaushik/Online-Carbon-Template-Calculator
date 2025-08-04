@@ -49,11 +49,11 @@ const WaterfallChart = ({ scope1Data, scope2Data, scope3Data }) => {
                 <BarChart
                     data={waterfallData}
                     layout="vertical"
-                    margin={{ top: 20, right: 30, left: 100, bottom: 5 }}
+                    margin={{ top: 20, right: 30, left: 100, bottom: 20 }}
                 >
                     <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis type="number" />
-                    <YAxis dataKey="name" type="category" width={100} />
+                    <XAxis type="number" label={{ value: 'Cumulative Emissions (Kg/CO2e)', position: 'insideBottom', offset: -40 }} />
+                    <YAxis dataKey="name" type="category" width={100} label={{ value: 'Sub-Category', angle: -90, position: 'insideLeft', offset: -90 }} />
                     <Tooltip formatter={(value, name, props) => {
                         if (props.payload.name === 'Total') {
                             return `${props.payload.value.toFixed(2)} Kg/CO2e`;

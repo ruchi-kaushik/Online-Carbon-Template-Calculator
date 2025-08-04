@@ -34,15 +34,21 @@ const BubbleChart = ({ scope1Data, scope2Data, scope3Data }) => {
             <ResponsiveContainer width="100%" height={500}>
                 <ScatterChart
                     margin={{
-                        top: 20,
+                        top: 30,
                         right: 20,
-                        bottom: 20,
+                        bottom: 40,
                         left: 20,
                     }}
                 >
                     <CartesianGrid />
-                    <XAxis type="number" dataKey="quantity" name="Quantity" unit="" />
-                    <YAxis type="number" dataKey="emissionFactor" name="Emission Factor" unit="" />
+                    <XAxis
+                        type="number"
+                        dataKey="quantity"
+                        name="Quantity"
+                        unit=""                                            
+                        label={{ value: 'Quantity', position: 'insideBottomRight', offset: -10 }}
+                    />
+                    <YAxis type="number" dataKey="emissionFactor" name="Emission Factor" unit="" label={{ value: 'Emission Factor', angle: -90, position: 'insideLeft', offset: -10 }} />
                     <ZAxis type="number" dataKey="emissions" range={[100, 1000]} name="Emissions" unit="Kg/CO2e" />
                     <Tooltip cursor={{ strokeDasharray: '3 3' }} />
                     <Legend />
