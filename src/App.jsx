@@ -30,8 +30,7 @@ const editableKeys = [
     'fuelSourceType',
     'unit',
     'quantity',
-    'emissionFactor',
-    'date'
+    'emissionFactor',    
 ];
 
 const modalEditableKeys = Object.keys(initialScopeData);
