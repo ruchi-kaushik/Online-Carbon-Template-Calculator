@@ -243,7 +243,7 @@ const DashboardView = ({
     totalOverallEmissions, totalEmissions,
     scopeChartData, emissionsBySource, tablesRef,
     scope1Data, scope2Data, scope3Data,
-    waterfallRef, bubbleRef, pieChartRef, barChartRef
+    waterfallRef, bubbleRef, barChartRef
 }) => (
     <div>
         <div className="flex justify-between items-center mb-8">
@@ -256,55 +256,57 @@ const DashboardView = ({
             </button>
         </div>
         <div className="p-4 bg-gray-50 rounded-2xl">
-            <div ref={dashboardRef} className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-                <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100 flex flex-col justify-center items-center lg:col-span-1">
-                    <h3 className="text-lg font-semibold text-gray-500 mb-2">Total Emissions</h3>
-                    <p className="text-5xl font-bold text-gray-800">{totalOverallEmissions.toFixed(2)}</p>
-                    <p className="text-gray-500 mt-1">Kg/CO2e</p>
+            <div ref={dashboardRef}>
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+                    <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100 flex flex-col justify-center items-center lg:col-span-1">
+                        <h3 className="text-lg font-semibold text-gray-500 mb-2">Total Emissions</h3>
+                        <p className="text-5xl font-bold text-gray-800">{totalOverallEmissions.toFixed(2)}</p>
+                        <p className="text-gray-500 mt-1">Kg/CO2e</p>
+                    </div>
+                    <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
+                        <h3 className="text-lg font-semibold text-gray-500 mb-2">Scope 1</h3>
+                        <p className="text-4xl font-bold text-blue-500">{totalEmissions.scope1.toFixed(2)}</p>
+                        <p className="text-gray-500 mt-1">Kg/CO2e</p>
+                    </div>
+                    <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
+                        <h3 className="text-lg font-semibold text-gray-500 mb-2">Scope 2</h3>
+                        <p className="text-4xl font-bold text-green-500">{totalEmissions.scope2.toFixed(2)}</p>
+                        <p className="text-gray-500 mt-1">Kg/CO2e</p>
+                    </div>
+                    <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
+                        <h3 className="text-lg font-semibold text-gray-500 mb-2">Scope 3</h3>
+                        <p className="text-4xl font-bold text-amber-500">{totalEmissions.scope3.toFixed(2)}</p>
+                        <p className="text-gray-500 mt-1">Kg/CO2e</p>
+                    </div>
                 </div>
-                <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
-                    <h3 className="text-lg font-semibold text-gray-500 mb-2">Scope 1</h3>
-                    <p className="text-4xl font-bold text-blue-500">{totalEmissions.scope1.toFixed(2)}</p>
-                    <p className="text-gray-500 mt-1">Kg/CO2e</p>
-                </div>
-                <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
-                    <h3 className="text-lg font-semibold text-gray-500 mb-2">Scope 2</h3>
-                    <p className="text-4xl font-bold text-green-500">{totalEmissions.scope2.toFixed(2)}</p>
-                    <p className="text-gray-500 mt-1">Kg/CO2e</p>
-                </div>
-                <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
-                    <h3 className="text-lg font-semibold text-gray-500 mb-2">Scope 3</h3>
-                    <p className="text-4xl font-bold text-amber-500">{totalEmissions.scope3.toFixed(2)}</p>
-                    <p className="text-gray-500 mt-1">Kg/CO2e</p>
-                </div>
-            </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
-                <div ref={pieChartRef} className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
-                    <h3 className="text-xl font-bold text-gray-700 mb-4 text-center">Emissions by Scope</h3>
-                    <ResponsiveContainer width="100%" height={300}>
-                        <PieChart>
-                            <Pie data={scopeChartData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={100} label>
-                                {scopeChartData.map((entry, index) => (
-                                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                ))}
-                            </Pie>
-                            <Tooltip formatter={(value) => `${value.toFixed(2)} Kg/CO2e`} />
-                            <Legend />
-                        </PieChart>
-                    </ResponsiveContainer>
-                </div>
-                <div ref={barChartRef} className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
-                    <h3 className="text-xl font-bold text-gray-700 mb-4">Top Emission Sources</h3>
-                    <ResponsiveContainer width="100%" height={300}>
-                        <BarChart data={emissionsBySource} layout="vertical" margin={{ top: 5, right: 30, left: 100, bottom: 20 }}>
-                            <XAxis type="number" label={{ value: 'Emissions (Kg/CO2e)', position: 'insideBottom', offset: -40 }} />
-                            <YAxis dataKey="name" type="category" width={100} tick={{ fontSize: 12 }} label={{ value: 'Sub-Category', angle: -90, position: 'insideLeft', offset: -80 }} />
-                            <Tooltip formatter={(value) => `${value.toFixed(2)} Kg/CO2e`} />
-                            <Legend />
-                            <Bar dataKey="emissions" name="Emissions (Kg/CO2e)" fill="#8884d8" />
-                        </BarChart>
-                    </ResponsiveContainer>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
+                    <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
+                        <h3 className="text-xl font-bold text-gray-700 mb-4 text-center">Emissions by Scope</h3>
+                        <ResponsiveContainer width="100%" height={300}>
+                            <PieChart>
+                                <Pie data={scopeChartData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={100} label>
+                                    {scopeChartData.map((entry, index) => (
+                                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                    ))}
+                                </Pie>
+                                <Tooltip formatter={(value) => `${value.toFixed(2)} Kg/CO2e`} />
+                                <Legend />
+                            </PieChart>
+                        </ResponsiveContainer>
+                    </div>
+                    <div ref={barChartRef} className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
+                        <h3 className="text-xl font-bold text-gray-700 mb-4">Top Emission Sources</h3>
+                        <ResponsiveContainer width="100%" height={300}>
+                            <BarChart data={emissionsBySource} layout="vertical" margin={{ top: 5, right: 30, left: 100, bottom: 20 }}>
+                                <XAxis type="number" label={{ value: 'Emissions (Kg/CO2e)', position: 'insideBottom', offset: -40 }} />
+                                <YAxis dataKey="name" type="category" width={100} tick={{ fontSize: 12 }} label={{ value: 'Sub-Category', angle: -90, position: 'insideLeft', offset: -80 }} />
+                                <Tooltip formatter={(value) => `${value.toFixed(2)} Kg/CO2e`} />
+                                <Legend />
+                                <Bar dataKey="emissions" name="Emissions (Kg/CO2e)" fill="#8884d8" />
+                            </BarChart>
+                        </ResponsiveContainer>
+                    </div>
                 </div>
             </div>
 
@@ -365,7 +367,6 @@ export default function App() {
     const tablesRef = useRef(null);
     const waterfallRef = useRef(null);
     const bubbleRef = useRef(null);
-    const pieChartRef = useRef(null);
     const barChartRef = useRef(null);
 
     useEffect(() => {
@@ -576,13 +577,12 @@ export default function App() {
 
     const exportToPdf = async () => {
         const dashboardElement = dashboardRef.current;
-        const pieChartElement = pieChartRef.current;
         const barChartElement = barChartRef.current;
         const waterfallElement = waterfallRef.current;
         const bubbleElement = bubbleRef.current;
         const tablesElement = tablesRef.current;
 
-        if (!dashboardElement || !pieChartElement || !barChartElement || !waterfallElement || !bubbleElement || !tablesElement) {
+        if (!dashboardElement || !barChartElement || !waterfallElement || !bubbleElement || !tablesElement) {
             console.error("PDF export failed: a ref was not found.");
             showNotification("Could not export to PDF, an element was not found.", "error");
             return;
@@ -593,14 +593,12 @@ export default function App() {
         try {
             const canvasOptions = { scale: 2, useCORS: true, backgroundColor: '#ffffff' };
             const dashboardCanvas = await html2canvas(dashboardElement, canvasOptions);
-            const pieChartCanvas = await html2canvas(pieChartElement, canvasOptions);
             const barChartCanvas = await html2canvas(barChartElement, canvasOptions);
             const waterfallCanvas = await html2canvas(waterfallElement, canvasOptions);
             const bubbleCanvas = await html2canvas(bubbleElement, canvasOptions);
             const tablesCanvas = await html2canvas(tablesElement, canvasOptions);
 
             const dashboardImgData = dashboardCanvas.toDataURL('image/png');
-            const pieChartImgData = pieChartCanvas.toDataURL('image/png');
             const barChartImgData = barChartCanvas.toDataURL('image/png');
             const waterfallImgData = waterfallCanvas.toDataURL('image/png');
             const bubbleImgData = bubbleCanvas.toDataURL('image/png');
@@ -617,7 +615,7 @@ export default function App() {
                 return imgHeight;
             };
 
-            // Page 1: Header and Summary
+            // Page 1: Header and Summary (including Pie Chart)
             pdf.setFontSize(20);
             pdf.text(`${generalInfo.organisationName} - Carbon Footprint Report`, 14, 22);
             pdf.setFontSize(12);
@@ -630,7 +628,6 @@ export default function App() {
                 addImageToPdf(imgData);
             };
 
-            addChartPage(pieChartImgData);
             addChartPage(barChartImgData);
             addChartPage(waterfallImgData);
             addChartPage(bubbleImgData);
@@ -750,7 +747,6 @@ export default function App() {
                         scope1Data={scope1Data} scope2Data={scope2Data} scope3Data={scope3Data}
                         waterfallRef={waterfallRef}
                         bubbleRef={bubbleRef}
-                        pieChartRef={pieChartRef}
                         barChartRef={barChartRef}
                     />
                 )}
