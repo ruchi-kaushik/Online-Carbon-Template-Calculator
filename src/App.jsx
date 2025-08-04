@@ -5,6 +5,8 @@ import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, Legend, Resp
 import { PlusCircle, Trash2, Edit, Save, XCircle, FileDown, AreaChart, ArrowRight, Table } from 'lucide-react';
 import Notification from './components/Notification';
 import ConfirmationDialog from './components/ConfirmationDialog';
+import TreemapChart from './components/TreemapChart';
+import WaterfallChart from './components/WaterfallChart';
 
 // --- CONSTANTS AND UTILITY FUNCTIONS (TOP LEVEL) ---
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#AF19FF', '#FF4560'];
@@ -327,6 +329,8 @@ const DashboardView = ({
                         </BarChart>
                     </ResponsiveContainer>
                 </div>
+                <TreemapChart scope1Data={scope1Data} scope2Data={scope2Data} scope3Data={scope3Data} />
+                <WaterfallChart scope1Data={scope1Data} scope2Data={scope2Data} scope3Data={scope3Data} />
             </div>
         </div>
         <div ref={tablesRef} className="mt-8 bg-white p-4">
