@@ -5,7 +5,6 @@ import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, Legend, Resp
 import { PlusCircle, Trash2, Edit, Save, XCircle, FileDown, AreaChart, ArrowRight, Table } from 'lucide-react';
 import Notification from './components/Notification';
 import ConfirmationDialog from './components/ConfirmationDialog';
-import TreemapChart from './components/TreemapChart';
 import WaterfallChart from './components/WaterfallChart';
 import BubbleChart from './components/BubbleChart';
 
@@ -572,11 +571,10 @@ export default function App() {
     const exportToPdf = async () => {
         const dashboardElement = dashboardRef.current;
         const tablesElement = tablesRef.current;
-        const treemapElement = treemapRef.current;
         const waterfallElement = waterfallRef.current;
         const bubbleElement = bubbleRef.current;
 
-        if (!dashboardElement || !tablesElement || !treemapElement || !waterfallElement || !bubbleElement) {
+        if (!dashboardElement || !tablesElement || !waterfallElement || !bubbleElement) {
             console.error("PDF export failed: a ref was not found.");
             showNotification("Could not export to PDF, an element was not found.", "error");
             return;
@@ -598,11 +596,6 @@ export default function App() {
                 useCORS: true,
                 backgroundColor: '#ffffff'
             });
-            const treemapCanvas = await html2canvas(treemapElement, {
-                scale: 2,
-                useCORS: true,
-                backgroundColor: '#ffffff'
-            });
             const waterfallCanvas = await html2canvas(waterfallElement, {
                 scale: 2,
                 useCORS: true,
@@ -616,7 +609,6 @@ export default function App() {
 
             const dashboardImgData = dashboardCanvas.toDataURL('image/png');
             const tablesImgData = tablesCanvas.toDataURL('image/png');
-            const treemapImgData = treemapCanvas.toDataURL('image/png');
             const waterfallImgData = waterfallCanvas.toDataURL('image/png');
             const bubbleImgData = bubbleCanvas.toDataURL('image/png');
 
@@ -638,11 +630,6 @@ export default function App() {
             const dashboardImgHeight = (dashboardImgProps.height * pdfWidth) / dashboardImgProps.width;
             pdf.addImage(dashboardImgData, 'PNG', 0, position, pdfWidth, dashboardImgHeight);
             position += dashboardImgHeight;
-
-            const treemapImgProps = pdf.getImageProperties(treemapImgData);
-            const treemapImgHeight = (treemapImgProps.height * pdfWidth) / treemapImgProps.width;
-            pdf.addPage();
-            pdf.addImage(treemapImgData, 'PNG', 0, 0, pdfWidth, treemapImgHeight);
 
             const waterfallImgProps = pdf.getImageProperties(waterfallImgData);
             const waterfallImgHeight = (waterfallImgProps.height * pdfWidth) / waterfallImgProps.width;
