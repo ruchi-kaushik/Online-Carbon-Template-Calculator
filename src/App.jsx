@@ -7,6 +7,7 @@ import Notification from './components/Notification';
 import ConfirmationDialog from './components/ConfirmationDialog';
 import TreemapChart from './components/TreemapChart';
 import WaterfallChart from './components/WaterfallChart';
+import BubbleChart from './components/BubbleChart';
 
 // --- CONSTANTS AND UTILITY FUNCTIONS (TOP LEVEL) ---
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#AF19FF', '#FF4560'];
@@ -243,7 +244,8 @@ const DashboardView = ({
     totalOverallEmissions, totalEmissions,
     scopeChartData, emissionsBySource, tablesRef,
     scope1Data, scope2Data, scope3Data,
-    emissionsTrend, emissionsByFuelType
+    emissionsTrend, emissionsByFuelType,
+    treemapRef, waterfallRef, bubbleRef
 }) => (
     <div>
         <div className="flex justify-between items-center mb-8">
@@ -329,8 +331,15 @@ const DashboardView = ({
                         </BarChart>
                     </ResponsiveContainer>
                 </div>
-                <TreemapChart scope1Data={scope1Data} scope2Data={scope2Data} scope3Data={scope3Data} />
-                <WaterfallChart scope1Data={scope1Data} scope2Data={scope2Data} scope3Data={scope3Data} />
+                <div ref={treemapRef} className="lg:col-span-4">
+                    <TreemapChart scope1Data={scope1Data} scope2Data={scope2Data} scope3Data={scope3Data} />
+                </div>
+                <div ref={waterfallRef} className="lg:col-span-4">
+                    <WaterfallChart scope1Data={scope1Data} scope2Data={scope2Data} scope3Data={scope3Data} />
+                </div>
+                <div ref={bubbleRef} className="lg:col-span-4">
+                    <BubbleChart scope1Data={scope1Data} scope2Data={scope2Data} scope3Data={scope3Data} />
+                </div>
             </div>
         </div>
         <div ref={tablesRef} className="mt-8 bg-white p-4">
@@ -381,6 +390,9 @@ export default function App() {
 
     const dashboardRef = useRef(null);
     const tablesRef = useRef(null);
+    const treemapRef = useRef(null);
+    const waterfallRef = useRef(null);
+    const bubbleRef = useRef(null);
 
     useEffect(() => {
         fetchTags();
@@ -591,9 +603,12 @@ export default function App() {
     const exportToPdf = async () => {
         const dashboardElement = dashboardRef.current;
         const tablesElement = tablesRef.current;
+        const treemapElement = treemapRef.current;
+        const waterfallElement = waterfallRef.current;
+        const bubbleElement = bubbleRef.current;
 
-        if (!dashboardElement || !tablesElement) {
-            console.error("PDF export failed: dashboard or tables ref not found.");
+        if (!dashboardElement || !tablesElement || !treemapElement || !waterfallElement || !bubbleElement) {
+            console.error("PDF export failed: a ref was not found.");
             showNotification("Could not export to PDF, an element was not found.", "error");
             return;
         }
@@ -614,9 +629,27 @@ export default function App() {
                 useCORS: true,
                 backgroundColor: '#ffffff'
             });
+            const treemapCanvas = await html2canvas(treemapElement, {
+                scale: 2,
+                useCORS: true,
+                backgroundColor: '#ffffff'
+            });
+            const waterfallCanvas = await html2canvas(waterfallElement, {
+                scale: 2,
+                useCORS: true,
+                backgroundColor: '#ffffff'
+            });
+            const bubbleCanvas = await html2canvas(bubbleElement, {
+                scale: 2,
+                useCORS: true,
+                backgroundColor: '#ffffff'
+            });
 
             const dashboardImgData = dashboardCanvas.toDataURL('image/png');
             const tablesImgData = tablesCanvas.toDataURL('image/png');
+            const treemapImgData = treemapCanvas.toDataURL('image/png');
+            const waterfallImgData = waterfallCanvas.toDataURL('image/png');
+            const bubbleImgData = bubbleCanvas.toDataURL('image/png');
 
             // Step 2: Set up the PDF document
             const pdf = new jsPDF('p', 'mm', 'a4');
@@ -636,6 +669,21 @@ export default function App() {
             const dashboardImgHeight = (dashboardImgProps.height * pdfWidth) / dashboardImgProps.width;
             pdf.addImage(dashboardImgData, 'PNG', 0, position, pdfWidth, dashboardImgHeight);
             position += dashboardImgHeight;
+
+            const treemapImgProps = pdf.getImageProperties(treemapImgData);
+            const treemapImgHeight = (treemapImgProps.height * pdfWidth) / treemapImgProps.width;
+            pdf.addPage();
+            pdf.addImage(treemapImgData, 'PNG', 0, 0, pdfWidth, treemapImgHeight);
+
+            const waterfallImgProps = pdf.getImageProperties(waterfallImgData);
+            const waterfallImgHeight = (waterfallImgProps.height * pdfWidth) / waterfallImgProps.width;
+            pdf.addPage();
+            pdf.addImage(waterfallImgData, 'PNG', 0, 0, pdfWidth, waterfallImgHeight);
+
+            const bubbleImgProps = pdf.getImageProperties(bubbleImgData);
+            const bubbleImgHeight = (bubbleImgProps.height * pdfWidth) / bubbleImgProps.width;
+            pdf.addPage();
+            pdf.addImage(bubbleImgData, 'PNG', 0, 0, pdfWidth, bubbleImgHeight);
 
             // Step 5: Add the "Detailed Data" heading and paginate the tables image
             pdf.addPage();
@@ -753,6 +801,9 @@ export default function App() {
                         scopeChartData={scopeChartData} emissionsBySource={emissionsBySource} tablesRef={tablesRef}
                         scope1Data={scope1Data} scope2Data={scope2Data} scope3Data={scope3Data}
                         emissionsTrend={emissionsTrend} emissionsByFuelType={emissionsByFuelType}
+                        treemapRef={treemapRef}
+                        waterfallRef={waterfallRef}
+                        bubbleRef={bubbleRef}
                     />
                 )}
             </main>

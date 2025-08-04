@@ -4,9 +4,9 @@ import { ResponsiveContainer, Treemap, Tooltip } from 'recharts';
 const calculateEmissions = (item) => (parseFloat(item.quantity) || 0) * (parseFloat(item.emissionFactor) || 0);
 
 const SCOPE_COLORS = {
-    'Scope 1': '#0088FE',
-    'Scope 2': '#00C49F',
-    'Scope 3': '#FFBB28',
+    'Scope 1': '#0000FF',
+    'Scope 2': '#008000',
+    'Scope 3': '#FFBF00',
 };
 
 const shadeColor = (color, percent) => {
@@ -78,9 +78,9 @@ const TreemapChart = ({ scope1Data, scope2Data, scope3Data }) => {
     }, [scope1Data, scope2Data, scope3Data]);
 
     return (
-        <div className="lg:col-span-2 bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
+        <div className="lg:col-span-4 bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
             <h3 className="text-xl font-bold text-gray-700 mb-4 text-center">Emissions Treemap</h3>
-            <ResponsiveContainer width="100%" height={300}>
+            <ResponsiveContainer width="100%" height={500}>
                 <Treemap
                     data={treemapData}
                     dataKey="value"
@@ -96,12 +96,11 @@ const TreemapChart = ({ scope1Data, scope2Data, scope3Data }) => {
     );
 };
 
-const CustomizedContent = ({ root, depth, x, y, width, height, index, name, parent }) => {
-    const parentName = root.children[index]?.parent?.name || name;
-    const baseColor = SCOPE_COLORS[parentName] || '#8884d8';
+const CustomizedContent = ({ root, depth, x, y, width, height, index, name }) => {
+    const parentName = root.children[index]?.name;
+    const baseColor = SCOPE_COLORS[name] || (depth === 1 ? SCOPE_COLORS[parentName] : '#8884d8');
     
-    // This logic needs to be improved to get the correct parent for shading
-    const shade = depth === 1 ? 0 : (index % 5) * 0.1;
+    const shade = depth < 2 ? 0 : (index % 5) * 0.15;
     const color = shadeColor(baseColor, shade);
 
     return (
@@ -118,11 +117,9 @@ const CustomizedContent = ({ root, depth, x, y, width, height, index, name, pare
                     strokeOpacity: 1 / (depth + 1e-10),
                 }}
             />
-            {width > 80 && height > 20 && (
-                <text x={x + width / 2} y={y + height / 2 + 7} textAnchor="middle" fill="#fff" fontSize={14}>
-                    {name}
-                </text>
-            )}
+            <text x={x + width / 2} y={y + height / 2 + 7} textAnchor="middle" fill="#fff" fontSize={14}>
+                {name}
+            </text>
         </g>
     );
 };
